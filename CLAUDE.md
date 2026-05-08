@@ -188,10 +188,16 @@ progressive examples.
   `cluster_boot`, `validate_intervals`, etc.).
 - **Integration tests** for `patp` use a synthetic clustered
   illness-death dataset (helper `make_interval_data()` in `test-patp.R`).
-- **Critical regression test (TODO):** `prodint_AJ()` on a progressive
-  example must match `mstate::probtrans()` to ~1e-12. Add in
-  `tests/testthat/test-regression-mstate.R` once example data is in
-  `inst/extdata/`.
+- **Critical regression test:** `tests/testthat/test-regression-mstate.R`
+  generates a 50-subject progressive illness-death dataset, runs both
+  the `mstate` pipeline (`transMat` → `msprep` → `coxph` → `msfit` →
+  `probtrans`) and the `clusteredMS` pipeline (`trans_mat` →
+  `validate_intervals` → `intervals_to_long` → `fit_chaz` →
+  `prodint_AJ`) on the same realised paths, aligns both onto the union
+  jump-time grid via `step_interp()`, and asserts element-wise agreement
+  to within `1e-10`. Verified: the two pipelines agree to machine
+  epsilon (max abs diff ~2e-16) on this acyclic example, so the 1e-10
+  threshold has nine orders of magnitude of headroom.
 - **Do not require `mstate` in regular tests** (only `Suggests`). Wrap
   `mstate`-dependent tests in `skip_if_not_installed("mstate")`.
 
@@ -258,7 +264,7 @@ Pre-submission:
 - [ ] `DESCRIPTION` has real maintainer email and ORCID
 - [ ] `R/zzz.R` includes `utils::globalVariables(c("Tstart", "Tstop", ...))`
 - [ ] `inst/extdata/example_data.csv` ships with the package
-- [ ] Regression test against `mstate::probtrans()` passes (skipped
+- [x] Regression test against `mstate::probtrans()` passes (skipped
       gracefully if `mstate` not installed)
 - [ ] `devtools::document()` regenerates `man/` and `NAMESPACE`
 - [ ] `devtools::check()` returns 0 errors, 0 warnings, 0 notes locally
@@ -294,8 +300,9 @@ paper. Do not change this.
 
 ## Open TODOs
 
-- [ ] Verify `prodint_AJ()` matches `mstate::probtrans()` to ~1e-12 on
-      the example data
+- [x] Verify `prodint_AJ()` matches `mstate::probtrans()` to ~1e-12 on
+      the example data (done: agrees to ~2e-16 on a 50-subject
+      progressive illness-death case; see `test-regression-mstate.R`)
 - [ ] Add `inst/extdata/example_data.csv` from the original repo
 - [ ] Add `R/zzz.R` with `globalVariables(...)` for CRAN's
       "no visible binding" notes

@@ -49,7 +49,12 @@ test_that("print.patp prints expected sections for one-sample fit", {
 })
 
 test_that("print.patp shows test info for two-sample fit", {
-  fit <- make_simple_fit(two_sample = TRUE)
+  # suppressWarnings: a bootstrap replicate produces a stratum with no
+  # events, so survival::basehaz() -> agsurv() emits the harmless
+  # "no non-missing arguments to min; returning Inf" warning. The
+  # replicate is absorbed normally by downstream alignment; see the
+  # "Bootstrap conventions" section of CLAUDE.md.
+  fit <- suppressWarnings(make_simple_fit(two_sample = TRUE))
   out <- capture.output(print(fit))
   expect_true(any(grepl("Two-sample test", out)))
   expect_true(any(grepl("Statistic:", out)))
