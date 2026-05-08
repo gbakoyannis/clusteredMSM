@@ -9,8 +9,8 @@
 #'
 #' @keywords internal
 check_clusters <- function(data, cid, id) {
-  by_id <- aggregate(data[[cid]], by = list(data[[id]]),
-                     FUN = function(x) length(unique(x)))
+  by_id <- stats::aggregate(data[[cid]], by = list(data[[id]]),
+                            FUN = function(x) length(unique(x)))
   bad <- by_id$x > 1
   if (any(bad)) {
     stop("same individual(s) appear in more than 1 cluster ",
@@ -33,12 +33,12 @@ check_clusters <- function(data, cid, id) {
 #'
 #' @keywords internal
 add_cluster_sizes <- function(data, cid, id) {
-  per_subject <- aggregate(rep(1, nrow(data)),
-                           by = list(data[[cid]], data[[id]]),
-                           FUN = mean)
-  per_cluster <- aggregate(per_subject$x,
-                           by = list(per_subject$Group.1),
-                           FUN = sum)
+  per_subject <- stats::aggregate(rep(1, nrow(data)),
+                                  by = list(data[[cid]], data[[id]]),
+                                  FUN = mean)
+  per_cluster <- stats::aggregate(per_subject$x,
+                                  by = list(per_subject$Group.1),
+                                  FUN = sum)
   names(per_cluster) <- c(cid, "clust.size")
 
   data <- merge(data, per_cluster, by = cid)
