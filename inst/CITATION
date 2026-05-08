@@ -1,0 +1,19 @@
+bibentry(
+  bibtype  = "Article",
+  title    = "Nonparametric analysis of nonhomogeneous multistate processes with clustered observations",
+  author   = person("Giorgos", "Bakoyannis"),
+  journal  = "Biometrics",
+  year     = "2021",
+  volume   = "77",
+  number   = "2",
+  pages    = "533-546",
+  doi      = "10.1111/biom.13327",
+
+  textVersion = paste(
+    "Bakoyannis, G. (2021).",
+    "Nonparametric analysis of nonhomogeneous multistate processes with clustered observations.",
+    "Biometrics, 77(2), 533-546. doi:10.1111/biom.13327"
+  ),
+
+  header = "To cite clusteredMS in publications, please use:"
+)

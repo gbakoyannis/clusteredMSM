@@ -1,0 +1,40 @@
+Package: clusteredMS
+Type: Package
+Title: Nonparametric Analysis of Clustered Multistate Processes
+Version: 0.1.0
+Authors@R:
+    person(given = "Giorgos",
+           family = "Bakoyannis",
+           role = c("aut", "cre"),
+           email = "gbakogia@iu.edu",
+           comment = c(ORCID = "0000-0002-2789-2497"))
+Description: Nonparametric estimation of population-averaged transition
+    probabilities, with cluster-bootstrap pointwise confidence intervals,
+    simultaneous confidence bands, and two-sample Kolmogorov-Smirnov-type
+    tests for clustered or independent multistate process data. Methods
+    are based on Bakoyannis (2021) <doi:10.1111/biom.13327> and use the
+    working-independence Aalen-Johansen estimator. The package supports
+    both progressive (acyclic) and non-monotone (e.g., illness-death
+    with recovery) multistate processes, right censoring, left
+    truncation, and informative cluster size. The user supplies data
+    in interval format (one row per mutually-exclusive time interval
+    per subject) and interacts with the package through a single
+    formula-based function, patp().
+License: GPL-3
+Encoding: UTF-8
+Depends:
+    R (>= 3.5.0)
+Imports:
+    survival,
+    stats,
+    utils
+Suggests:
+    mstate,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+URL: https://github.com/gbakoyannis/clusteredMS
+BugReports: https://github.com/gbakoyannis/clusteredMS/issues
+Config/roxygen2/version: 8.0.0
