@@ -1,4 +1,4 @@
-# CLAUDE.md — clusteredMS
+# CLAUDE.md — clusteredMSM
 
 This file is read at the start of every Claude Code session. It encodes
 the key decisions and conventions for this package so they don't have
@@ -8,7 +8,7 @@ silently.
 
 ## What this package is
 
-`clusteredMS` is the canonical R package implementing Bakoyannis (2021),
+`clusteredMSM` is the canonical R package implementing Bakoyannis (2021),
 *Nonparametric analysis of nonhomogeneous multistate processes with
 clustered observations*, Biometrics 77(2):533–546, doi:10.1111/biom.13327.
 
@@ -160,7 +160,7 @@ progressive examples.
 
 ## Naming conventions
 
-- **Package name:** `clusteredMS` (camel-case, no underscore, CRAN-safe).
+- **Package name:** `clusteredMSM` (camel-case, no underscore, CRAN-safe).
 - **Functions:** `snake_case` (`patp`, `fit_chaz`, `cluster_boot`).
 - **Internal helpers:** leading dot (`.patp_onesample`, `.patp_point`).
   Not exported; not in NAMESPACE.
@@ -191,7 +191,7 @@ progressive examples.
 - **Critical regression test:** `tests/testthat/test-regression-mstate.R`
   generates a 50-subject progressive illness-death dataset, runs both
   the `mstate` pipeline (`transMat` → `msprep` → `coxph` → `msfit` →
-  `probtrans`) and the `clusteredMS` pipeline (`trans_mat` →
+  `probtrans`) and the `clusteredMSM` pipeline (`trans_mat` →
   `validate_intervals` → `intervals_to_long` → `fit_chaz` →
   `prodint_AJ`) on the same realised paths, aligns both onto the union
   jump-time grid via `step_interp()`, and asserts element-wise agreement
@@ -282,7 +282,7 @@ Post-submission:
 - [ ] Address reviewer comments within a week
 - [ ] Bump `Version:` and update `NEWS.md` for each resubmission
 
-## What citation("clusteredMS") returns
+## What citation("clusteredMSM") returns
 
 `inst/CITATION` pins the canonical citation to the Biometrics 2021
 paper. Do not change this.
@@ -303,9 +303,15 @@ paper. Do not change this.
 - [x] Verify `prodint_AJ()` matches `mstate::probtrans()` to ~1e-12 on
       the example data (done: agrees to ~2e-16 on a 50-subject
       progressive illness-death case; see `test-regression-mstate.R`)
-- [ ] Add `inst/extdata/example_data.csv` from the original repo
+- [x] Ship example data: `data/example_msm.rda` (lazy-loaded) +
+      `inst/extdata/example_data.csv` (CSV mirror); both generated
+      reproducibly from `data-raw/example_msm.R`
+      (`set.seed(2026)`, 40 subjects, 8 clusters,
+      illness-death-with-recovery). Documented in `R/data.R`.
+      `LazyData: true` added to `DESCRIPTION`.
 - [ ] Add `R/zzz.R` with `globalVariables(...)` for CRAN's
-      "no visible binding" notes
+      "no visible binding" notes (not currently needed — `R CMD
+      check` is clean with 0 notes; revisit if notes appear)
 - [ ] Implement linear and L2 tests (planned v0.2)
 - [ ] Add `plot.patp()` S3 method
 - [ ] Decide whether to drop `mstate` from `Suggests` after regression

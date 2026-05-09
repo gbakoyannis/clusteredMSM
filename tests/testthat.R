@@ -3,6 +3,6 @@
 # tests/testthat/.
 
 library(testthat)
-library(clusteredMS)
+library(clusteredMSM)
 
-test_check("clusteredMS")
+test_check("clusteredMSM")

@@ -1,8 +1,8 @@
-# clusteredMS 0.1.0
+# clusteredMSM 0.1.0
 
 ## Initial CRAN release
 
-* Initial CRAN release of `clusteredMS`.
+* Initial CRAN release of `clusteredMSM`.
 
 ## Highlights
 

@@ -1,8 +1,8 @@
 ---
-title: "Getting started with clusteredMS"
+title: "Getting started with clusteredMSM"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting started with clusteredMS}
+  %\VignetteIndexEntry{Getting started with clusteredMSM}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-`clusteredMS` provides nonparametric analysis of clustered multistate
+`clusteredMSM` provides nonparametric analysis of clustered multistate
 process data, based on Bakoyannis (2021). It exposes one user-facing
 function, `patp()`, that:
 
@@ -37,7 +37,7 @@ not require the `mstate` package.
 
 ## Input data format
 
-`clusteredMS` expects data in **interval format**: one row per
+`clusteredMSM` expects data in **interval format**: one row per
 mutually-exclusive time interval per subject, with columns for
 interval start time (`Tstart`), end time (`Tstop`), starting state
 (`Sstart`), and ending state (`Sstop`). The column names are flexible
@@ -51,7 +51,7 @@ contiguous (`Tstop[k] == Tstart[k+1]`) and spatially contiguous
 ## A progressive illness-death example
 
 ```{r setup}
-library(clusteredMS)
+library(clusteredMSM)
 
 # 1=Healthy, 2=Ill, 3=Dead. Allowed: 1->2, 1->3, 2->3.
 tmat <- trans_mat(

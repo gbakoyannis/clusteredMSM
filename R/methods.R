@@ -12,7 +12,7 @@
 #' @export
 print.patp <- function(x, digits = max(3L, getOption("digits") - 3L), ...) {
 
-  cat("\nclusteredMS: Population-Averaged Transition Probability\n")
+  cat("\nclusteredMSM: Population-Averaged Transition Probability\n")
   cat(strrep("-", 56), "\n", sep = "")
 
   cat("Call:\n  ")

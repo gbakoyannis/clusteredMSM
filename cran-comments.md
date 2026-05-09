@@ -13,7 +13,7 @@
 
 ## This is a new release
 
-This is the first submission of clusteredMS.
+This is the first submission of clusteredMSM.
 
 The package implements methods from Bakoyannis (2021)
 <doi:10.1111/biom.13327> for nonparametric analysis of clustered

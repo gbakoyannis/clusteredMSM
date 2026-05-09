@@ -1,4 +1,4 @@
-# Regression test: clusteredMS's prodint_AJ() must agree with
+# Regression test: clusteredMSM's prodint_AJ() must agree with
 # mstate::probtrans() on a progressive (acyclic) illness-death model
 # to within numerical precision. mstate is in Suggests only, so this
 # whole file is skipped when mstate is unavailable.
@@ -10,7 +10,7 @@ skip_if_not_installed("mstate")
 # Allowed transitions: 1 -> 2, 1 -> 3, 2 -> 3 (no recovery).
 # We simulate latent illness, healthy-death, ill-death and censoring
 # times once, then materialise BOTH the mstate wide format and the
-# clusteredMS interval format from the *same* realised paths.
+# clusteredMSM interval format from the *same* realised paths.
 make_progressive_data <- function(n = 50, seed = 20260508) {
   set.seed(seed)
 
@@ -107,7 +107,7 @@ test_that("prodint_AJ agrees with mstate::probtrans on a progressive model", {
   # pt[[1]] is P(0, t) starting from state 1 (Healthy)
   ms_curve <- pt[[1]]   # columns: time, pstate1, pstate2, pstate3
 
-  # ---- clusteredMS pipeline --------------------------------------
+  # ---- clusteredMSM pipeline --------------------------------------
   tmat_c <- trans_mat(list(c(2, 3), 3, integer(0)),
                       names = c("Healthy", "Ill", "Dead"))
 
