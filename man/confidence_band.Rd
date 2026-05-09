@@ -4,7 +4,7 @@
 \alias{confidence_band}
 \title{Simultaneous Confidence Band via Cluster-Bootstrap Quantile}
 \usage{
-confidence_band(point, boot, times, n, level = 0.95, trim = c(0.05, 0.95))
+confidence_band(point, boot, times, level = 0.95, trim = c(0.05, 0.95))
 }
 \arguments{
 \item{point}{Numeric vector of point estimates over a time grid.}
@@ -16,9 +16,6 @@ replicates.}
 \item{times}{Numeric vector of times matching the rows of \code{boot}
 and the entries of \code{point}.}
 
-\item{n}{Integer. The number of independent clusters in the original
-sample. Required for the band scaling.}
-
 \item{level}{Confidence level. Default 0.95.}
 
 \item{trim}{Numeric vector of length 2. Lower and upper quantiles of
@@ -29,16 +26,22 @@ the jump-time distribution at which to clip the band (avoids the
 \value{
 A list with elements \code{ll.band} and \code{ul.band}:
   numeric vectors of band limits, with \code{NA} outside the trimmed
-  range.
+  range or where \code{point} is at the boundary 0/1.
 }
 \description{
 Constructs a simultaneous (uniform-over-time) confidence band for a
-transition probability curve, using the equal-precision-style
-construction of Bakoyannis (2021) on the cluster bootstrap output.
+transition probability curve by working on the cloglog scale: each
+bootstrap replicate is transformed, the studentized supremum
+\eqn{\sup_t |g(\hat P_b(t)) - g(\hat P(t))| / \mathrm{SE}_g(t)} is
+computed for every replicate, the \code{level} quantile of those
+suprema is taken as the critical value, and the resulting band is
+back-transformed to the probability scale.
 }
 \details{
-The band is computed on the cloglog scale using a variance-stabilizing
-weight \eqn{q(t) = 1 / (1 + \sigma^2(t))}, then back-transformed.
-This matches the construction in the original \code{patp()} code.
+The bootstrap SD on the cloglog scale already estimates the
+standard error of \eqn{g(\hat P(t))} directly, so no further
+\eqn{\sqrt{n}} rescaling is applied. The studentized-supremum
+construction yields a band that is automatically variance-adapted
+over time.
 }
 \keyword{internal}

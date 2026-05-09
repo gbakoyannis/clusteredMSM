@@ -37,10 +37,8 @@
     boot_mat <- cluster_boot(long, cid = resample_col, B = B,
                              fn = fn_boot, seed = seed)
 
-    n     <- length(unique(long[[resample_col]]))
-    sigma <- apply(boot_mat, 1L, stats::sd, na.rm = TRUE)
-    se    <- sigma / sqrt(n)
-    ci    <- ci_cloglog(curves$P, se, level = level)
+    se <- apply(boot_mat, 1L, stats::sd, na.rm = TRUE)
+    ci <- ci_cloglog(curves$P, boot_mat, level = level)
 
     curves$se <- se
     curves$ll <- ci$ll
@@ -48,7 +46,7 @@
 
     if (cband) {
       band <- confidence_band(curves$P, boot_mat,
-                              times = grid, n = n, level = level)
+                              times = grid, level = level)
       curves$ll.band <- band$ll.band
       curves$ul.band <- band$ul.band
     }
@@ -143,10 +141,10 @@
   ng <- length(grid)
   boot_0 <- curves_boot[seq_len(ng), , drop = FALSE]
   boot_1 <- curves_boot[(ng + 1L):(2L * ng), , drop = FALSE]
-  se_0   <- apply(boot_0, 1L, stats::sd, na.rm = TRUE) / sqrt(n)
-  se_1   <- apply(boot_1, 1L, stats::sd, na.rm = TRUE) / sqrt(n)
-  ci_0   <- ci_cloglog(p0_grid, se_0, level = level)
-  ci_1   <- ci_cloglog(p1_grid, se_1, level = level)
+  se_0   <- apply(boot_0, 1L, stats::sd, na.rm = TRUE)
+  se_1   <- apply(boot_1, 1L, stats::sd, na.rm = TRUE)
+  ci_0   <- ci_cloglog(p0_grid, boot_0, level = level)
+  ci_1   <- ci_cloglog(p1_grid, boot_1, level = level)
 
   curves <- rbind(
     data.frame(time = grid, P = p0_grid,
@@ -158,10 +156,8 @@
   )
 
   if (cband) {
-    band_0 <- confidence_band(p0_grid, boot_0, times = grid, n = n,
-                              level = level)
-    band_1 <- confidence_band(p1_grid, boot_1, times = grid, n = n,
-                              level = level)
+    band_0 <- confidence_band(p0_grid, boot_0, times = grid, level = level)
+    band_1 <- confidence_band(p1_grid, boot_1, times = grid, level = level)
     curves$ll.band <- c(band_0$ll.band, band_1$ll.band)
     curves$ul.band <- c(band_0$ul.band, band_1$ul.band)
   }

@@ -1,44 +1,67 @@
 #' Pointwise Confidence Intervals via Complementary Log-Log Transformation
 #'
-#' Computes 95% (or arbitrary level) pointwise confidence intervals for a
-#' transition probability estimate by applying the cloglog transformation
-#' \eqn{g(p) = \log(-\log p)} on the standard error scale and inverting
-#' back to the probability scale. Used internally by \code{patp()}.
+#' Computes pointwise confidence intervals for a transition probability
+#' estimate by bootstrapping directly on the cloglog scale: each
+#' bootstrap replicate is transformed by \eqn{g(p) = \log(-\log p)}, the
+#' standard error is taken as the across-replicate \code{sd} of the
+#' transformed values, a symmetric interval is built on the cloglog
+#' scale, and the result is back-transformed to the probability scale.
 #'
-#' @param point Numeric vector of point estimates in (0, 1).
-#' @param se Numeric vector of standard errors, same length as \code{point}.
+#' @param point Numeric vector of point estimates in (0, 1), length T.
+#' @param boot  Numeric matrix of bootstrap replicates of \code{point}:
+#'   \code{nrow(boot) == length(point)} (rows index time points,
+#'   columns index replicates), as produced by \code{cluster_boot()}.
 #' @param level Confidence level. Default 0.95.
 #'
 #' @return A list with elements \code{ll} and \code{ul}: numeric vectors
-#'   of lower and upper confidence limits.
+#'   of lower and upper confidence limits, the same length as
+#'   \code{point}.
 #'
 #' @details
-#' The cloglog transformation is preferred over the identity for
-#' transition probabilities because it (a) keeps confidence limits in
-#' (0, 1) without ad hoc truncation and (b) gives more accurate coverage
-#' for probabilities near the boundaries.
+#' Bootstrapping on the cloglog scale avoids the delta-method
+#' approximation that an earlier implementation used (and which had
+#' incorrect coverage when the bootstrap SE was passed in already on
+#' the probability scale). The cloglog transformation is monotone
+#' \emph{decreasing} on (0, 1), so the upper end of the interval on
+#' the cloglog scale corresponds to the \emph{lower} end on the
+#' probability scale, and vice versa.
 #'
-#' For point estimates exactly equal to 0 or 1, the cloglog is undefined
-#' and \code{NA} is returned for both limits at those positions.
+#' For point estimates exactly equal to 0 or 1 the cloglog is
+#' undefined, and \code{NA} is returned for both limits at those
+#' positions. Bootstrap replicates outside (0, 1) are masked to
+#' \code{NA} when computing the cloglog-scale standard error.
 #'
 #' @keywords internal
 #' @export
-ci_cloglog <- function(point, se, level = 0.95) {
+ci_cloglog <- function(point, boot, level = 0.95) {
 
-  if (length(point) != length(se)) {
-    stop("'point' and 'se' must have the same length")
+  if (!is.matrix(boot)) {
+    stop("'boot' must be a numeric matrix (rows = time points, cols = replicates)")
+  }
+  if (nrow(boot) != length(point)) {
+    stop("nrow(boot) must equal length(point)")
   }
 
   z <- stats::qnorm(1 - (1 - level) / 2)
 
   ll <- ul <- rep(NA_real_, length(point))
-  ok <- point > 0 & point < 1 & !is.na(point) & !is.na(se)
+  ok <- !is.na(point) & point > 0 & point < 1
 
-  log_log <- log(-log(point[ok]))
-  scale   <- se[ok] / (point[ok] * log(point[ok]))
+  if (!any(ok)) return(list(ll = ll, ul = ul))
 
-  ll[ok] <- exp(-exp(log_log - z * scale))
-  ul[ok] <- exp(-exp(log_log + z * scale))
+  g_boot <- boot[ok, , drop = FALSE]
+  invalid <- !is.finite(g_boot) | g_boot <= 0 | g_boot >= 1
+  g_boot[invalid] <- NA_real_
+  g_boot <- log(-log(g_boot))
+
+  g_point <- log(-log(point[ok]))
+  se_g    <- apply(g_boot, 1L, stats::sd, na.rm = TRUE)
+
+  # g(p) = log(-log p) is monotone decreasing on (0, 1):
+  # the upper end on the cloglog scale gives the lower end on the
+  # probability scale after back-transformation by exp(-exp(.)).
+  ll[ok] <- exp(-exp(g_point + z * se_g))
+  ul[ok] <- exp(-exp(g_point - z * se_g))
 
   list(ll = ll, ul = ul)
 }
@@ -47,8 +70,12 @@ ci_cloglog <- function(point, se, level = 0.95) {
 #' Simultaneous Confidence Band via Cluster-Bootstrap Quantile
 #'
 #' Constructs a simultaneous (uniform-over-time) confidence band for a
-#' transition probability curve, using the equal-precision-style
-#' construction of Bakoyannis (2021) on the cluster bootstrap output.
+#' transition probability curve by working on the cloglog scale: each
+#' bootstrap replicate is transformed, the studentized supremum
+#' \eqn{\sup_t |g(\hat P_b(t)) - g(\hat P(t))| / \mathrm{SE}_g(t)} is
+#' computed for every replicate, the \code{level} quantile of those
+#' suprema is taken as the critical value, and the resulting band is
+#' back-transformed to the probability scale.
 #'
 #' @param point Numeric vector of point estimates over a time grid.
 #' @param boot Numeric matrix of bootstrap replicates: rows correspond
@@ -56,8 +83,6 @@ ci_cloglog <- function(point, se, level = 0.95) {
 #'   replicates.
 #' @param times Numeric vector of times matching the rows of \code{boot}
 #'   and the entries of \code{point}.
-#' @param n Integer. The number of independent clusters in the original
-#'   sample. Required for the band scaling.
 #' @param level Confidence level. Default 0.95.
 #' @param trim Numeric vector of length 2. Lower and upper quantiles of
 #'   the jump-time distribution at which to clip the band (avoids the
@@ -66,18 +91,23 @@ ci_cloglog <- function(point, se, level = 0.95) {
 #'
 #' @return A list with elements \code{ll.band} and \code{ul.band}:
 #'   numeric vectors of band limits, with \code{NA} outside the trimmed
-#'   range.
+#'   range or where \code{point} is at the boundary 0/1.
 #'
 #' @details
-#' The band is computed on the cloglog scale using a variance-stabilizing
-#' weight \eqn{q(t) = 1 / (1 + \sigma^2(t))}, then back-transformed.
-#' This matches the construction in the original \code{patp()} code.
+#' The bootstrap SD on the cloglog scale already estimates the
+#' standard error of \eqn{g(\hat P(t))} directly, so no further
+#' \eqn{\sqrt{n}} rescaling is applied. The studentized-supremum
+#' construction yields a band that is automatically variance-adapted
+#' over time.
 #'
 #' @keywords internal
 #' @export
-confidence_band <- function(point, boot, times, n,
+confidence_band <- function(point, boot, times,
                             level = 0.95, trim = c(0.05, 0.95)) {
 
+  if (!is.matrix(boot)) {
+    stop("'boot' must be a numeric matrix (rows = time points, cols = replicates)")
+  }
   if (nrow(boot) != length(point)) {
     stop("nrow(boot) must equal length(point)")
   }
@@ -85,35 +115,36 @@ confidence_band <- function(point, boot, times, n,
     stop("'times' must have the same length as 'point'")
   }
 
-  sigma <- apply(boot, 1, stats::sd, na.rm = TRUE)
-  q_t   <- 1 / (1 + sigma^2)
+  na_band <- function() list(ll.band = rep(NA_real_, length(point)),
+                             ul.band = rep(NA_real_, length(point)))
 
   jump_times <- times[c(TRUE, diff(point) != 0)]
-  if (length(jump_times) == 0L) {
-    return(list(ll.band = rep(NA_real_, length(point)),
-                ul.band = rep(NA_real_, length(point))))
-  }
+  if (length(jump_times) == 0L) return(na_band())
   qs <- stats::quantile(jump_times, probs = trim)
 
-  in_range <- times >= qs[1] & times <= qs[2] & point > 0 & point < 1
+  in_range <- !is.na(point) & point > 0 & point < 1 &
+              times >= qs[1] & times <= qs[2]
+  if (!any(in_range)) return(na_band())
 
-  if (sum(in_range) == 0L) {
-    return(list(ll.band = rep(NA_real_, length(point)),
-                ul.band = rep(NA_real_, length(point))))
-  }
+  g_point <- log(-log(point[in_range]))
+  g_boot  <- boot[in_range, , drop = FALSE]
+  invalid <- !is.finite(g_boot) | g_boot <= 0 | g_boot >= 1
+  g_boot[invalid] <- NA_real_
+  g_boot <- log(-log(g_boot))
 
-  B_t <- q_t[in_range] * boot[in_range, , drop = FALSE] /
-           (log(point[in_range]) * point[in_range])
-  B_t <- abs(B_t)
-  c_a <- stats::quantile(apply(B_t, 2, max, na.rm = TRUE),
-                         probs = level, na.rm = TRUE)
+  se_g <- apply(g_boot, 1L, stats::sd, na.rm = TRUE)
+
+  # Studentized residuals on cloglog scale, replicate-by-replicate sup
+  resid <- abs(sweep(g_boot, 1L, g_point, FUN = "-")) / se_g
+  sups  <- apply(resid, 2L, max, na.rm = TRUE)
+  sups  <- sups[is.finite(sups)]
+  if (length(sups) == 0L) return(na_band())
+  c_a <- stats::quantile(sups, probs = level, na.rm = TRUE)
 
   ll.band <- ul.band <- rep(NA_real_, length(point))
-  log_log <- log(-log(point[in_range]))
-  shift   <- c_a / (sqrt(n) * q_t[in_range])
-
-  ll.band[in_range] <- exp(-exp(log_log + shift))
-  ul.band[in_range] <- exp(-exp(log_log - shift))
+  # g is decreasing => upper-cloglog = lower-probability
+  ll.band[in_range] <- exp(-exp(g_point + c_a * se_g))
+  ul.band[in_range] <- exp(-exp(g_point - c_a * se_g))
 
   list(ll.band = ll.band, ul.band = ul.band)
 }

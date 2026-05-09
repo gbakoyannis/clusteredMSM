@@ -4,32 +4,42 @@
 \alias{ci_cloglog}
 \title{Pointwise Confidence Intervals via Complementary Log-Log Transformation}
 \usage{
-ci_cloglog(point, se, level = 0.95)
+ci_cloglog(point, boot, level = 0.95)
 }
 \arguments{
-\item{point}{Numeric vector of point estimates in (0, 1).}
+\item{point}{Numeric vector of point estimates in (0, 1), length T.}
 
-\item{se}{Numeric vector of standard errors, same length as \code{point}.}
+\item{boot}{Numeric matrix of bootstrap replicates of \code{point}:
+\code{nrow(boot) == length(point)} (rows index time points,
+columns index replicates), as produced by \code{cluster_boot()}.}
 
 \item{level}{Confidence level. Default 0.95.}
 }
 \value{
 A list with elements \code{ll} and \code{ul}: numeric vectors
-  of lower and upper confidence limits.
+  of lower and upper confidence limits, the same length as
+  \code{point}.
 }
 \description{
-Computes 95% (or arbitrary level) pointwise confidence intervals for a
-transition probability estimate by applying the cloglog transformation
-\eqn{g(p) = \log(-\log p)} on the standard error scale and inverting
-back to the probability scale. Used internally by \code{patp()}.
+Computes pointwise confidence intervals for a transition probability
+estimate by bootstrapping directly on the cloglog scale: each
+bootstrap replicate is transformed by \eqn{g(p) = \log(-\log p)}, the
+standard error is taken as the across-replicate \code{sd} of the
+transformed values, a symmetric interval is built on the cloglog
+scale, and the result is back-transformed to the probability scale.
 }
 \details{
-The cloglog transformation is preferred over the identity for
-transition probabilities because it (a) keeps confidence limits in
-(0, 1) without ad hoc truncation and (b) gives more accurate coverage
-for probabilities near the boundaries.
+Bootstrapping on the cloglog scale avoids the delta-method
+approximation that an earlier implementation used (and which had
+incorrect coverage when the bootstrap SE was passed in already on
+the probability scale). The cloglog transformation is monotone
+\emph{decreasing} on (0, 1), so the upper end of the interval on
+the cloglog scale corresponds to the \emph{lower} end on the
+probability scale, and vice versa.
 
-For point estimates exactly equal to 0 or 1, the cloglog is undefined
-and \code{NA} is returned for both limits at those positions.
+For point estimates exactly equal to 0 or 1 the cloglog is
+undefined, and \code{NA} is returned for both limits at those
+positions. Bootstrap replicates outside (0, 1) are masked to
+\code{NA} when computing the cloglog-scale standard error.
 }
 \keyword{internal}
