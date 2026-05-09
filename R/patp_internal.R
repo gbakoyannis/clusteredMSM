@@ -65,8 +65,11 @@
                             h, j, s,
                             weighted, LMAJ,
                             B, cband, level, seed,
-                            group_name) {
+                            group_name,
+                            design = c("auto", "shared",
+                                       "cluster_random", "indep_random")) {
 
+  design <- match.arg(design)
   resample_col <- if (has_cluster) "cluster" else "id"
 
   if (weighted) long <- add_cluster_sizes(long, "cluster", "id")
@@ -74,6 +77,84 @@
   group_levels <- sort(unique(long$group))
   long_0 <- long[long$group == group_levels[1L], , drop = FALSE]
   long_1 <- long[long$group == group_levels[2L], , drop = FALSE]
+
+  ## ---- Resolve / validate design against the cluster/group structure ----
+  ##
+  ## Three regimes:
+  ##   shared         every cluster carries both groups (case i,
+  ##                  Bakoyannis 2021).
+  ##   cluster_random each cluster carries one group, n_1 and n_2 fixed
+  ##                  by design (case ii.a, Bakoyannis & Bandyopadhyay
+  ##                  2022). Stratified bootstrap.
+  ##   indep_random   each cluster carries one group, n_1 and n_2 random
+  ##                  (independent observational comparison; case ii.b).
+  ##                  Unstratified bootstrap.
+  ##
+  ## The two-sample asymptotic regime applies for both ii.a and ii.b, so
+  ## the scaling factor is sqrt(n_1 n_2 / (n_1 + n_2)) for either; only
+  ## the bootstrap (stratified vs. unstratified) differs.
+  ##
+  ## "auto" never picks "cluster_random" -- that is a stronger claim
+  ## about the data-generating process and must be opted into by the
+  ## user.
+  if (has_cluster) {
+    cluster_groups <- tapply(long$group, long$cluster,
+                             function(x) length(unique(x)))
+    n_one  <- sum(cluster_groups == 1L)
+    n_both <- sum(cluster_groups == 2L)
+  } else {
+    n_one  <- NA_integer_
+    n_both <- NA_integer_
+  }
+
+  if (design == "auto") {
+    if (!has_cluster) {
+      design <- "indep_random"
+    } else if (n_one == 0L) {
+      design <- "shared"
+    } else if (n_both == 0L) {
+      design <- "indep_random"            # safer default than cluster_random
+      warning("Each cluster contains observations from only one group. ",
+              "Using design = 'indep_random' (independent observational ",
+              "comparison, unstratified bootstrap). If this is a ",
+              "cluster-randomized trial with fixed n_1 and n_2, set ",
+              "design = 'cluster_random' explicitly for stratified ",
+              "resampling.",
+              call. = FALSE)
+    } else {
+      stop("Mixed cluster structure detected (some clusters carry both ",
+           "groups, some only one). This regime is not supported in ",
+           "the current version.")
+    }
+  } else if (design == "shared") {
+    if (has_cluster && n_one > 0L) {
+      stop("design = \"shared\" requires every cluster to contain ",
+           "observations from both groups, but some clusters contain ",
+           "only one. If this is a cluster-randomized trial, use ",
+           "design = \"cluster_random\"; if it is an independent ",
+           "observational comparison, use design = \"indep_random\".")
+    }
+  } else if (design == "cluster_random") {
+    if (!has_cluster) {
+      stop("design = \"cluster_random\" requires a cluster column. ",
+           "Cluster-randomized inference is defined at the cluster ",
+           "level; subject-level stratification would be a different ",
+           "procedure.")
+    }
+    if (n_both > 0L) {
+      stop("design = \"cluster_random\" requires each cluster to ",
+           "contain observations from only one group, but some ",
+           "clusters contain both. Use design = \"shared\" if this ",
+           "is a multicenter trial.")
+    }
+  } else if (design == "indep_random") {
+    if (has_cluster && n_both > 0L) {
+      stop("design = \"indep_random\" requires each cluster to ",
+           "contain observations from only one group, but some ",
+           "clusters contain both. Use design = \"shared\" if this ",
+           "is a multicenter trial.")
+    }
+  }
 
   p0 <- .patp_point(long_0, tmat, h = h, j = j, s = s,
                     weighted = weighted, lmaj = LMAJ)
@@ -129,13 +210,37 @@
     c(g0, g1)
   }
 
+  ## ---- Bootstrap: stratified iff design == "cluster_random" ----
+  if (design == "cluster_random") {
+    cluster_to_group <- tapply(long$group, long$cluster,
+                               function(x) as.character(x[1L]))
+    strata_vec <- as.character(cluster_to_group)
+    names(strata_vec) <- names(cluster_to_group)
+  } else {
+    strata_vec <- NULL
+  }
+
   diff_boot   <- cluster_boot(long, cid = resample_col, B = B,
-                              fn = fn_diff, seed = seed)
+                              fn = fn_diff, strata = strata_vec,
+                              seed = seed)
   curves_boot <- cluster_boot(long, cid = resample_col, B = B,
-                              fn = fn_curves,
+                              fn = fn_curves, strata = strata_vec,
                               seed = if (is.null(seed)) NULL else seed + 1L)
 
   n <- length(unique(long[[resample_col]]))
+
+  ## ---- Asymptotic scaling factor ----
+  ## sqrt(n) for case (i) [shared]; sqrt(n_1 n_2 / (n_1 + n_2)) for
+  ## both two-independent-sample regimes (ii.a and ii.b). The factor
+  ## is determined by the asymptotic regime, not by whether the
+  ## bootstrap is stratified.
+  if (design == "shared") {
+    scale_factor <- sqrt(n)
+  } else {
+    n1 <- length(unique(long_0[[resample_col]]))
+    n2 <- length(unique(long_1[[resample_col]]))
+    scale_factor <- sqrt(n1 * n2 / (n1 + n2))
+  }
 
   ## Per-group SEs and CIs
   ng <- length(grid)
@@ -162,7 +267,7 @@
     curves$ul.band <- c(band_0$ul.band, band_1$ul.band)
   }
 
-  test <- ks_pvalue(diff_point, diff_boot, n = n)
+  test <- ks_pvalue(diff_point, diff_boot, scale = scale_factor)
 
   list(curves       = curves,
        test         = list(statistic = test$statistic,
@@ -170,7 +275,8 @@
                            type      = "Kolmogorov-Smirnov"),
        n_clusters   = if (has_cluster) length(unique(long$cluster)) else NA_integer_,
        groups       = group_levels,
-       group_name   = group_name)
+       group_name   = group_name,
+       design       = design)
 }
 
 

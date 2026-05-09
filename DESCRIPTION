@@ -11,8 +11,11 @@ Authors@R:
 Description: Nonparametric estimation of population-averaged transition
     probabilities, with cluster-bootstrap pointwise confidence intervals,
     simultaneous confidence bands, and two-sample Kolmogorov-Smirnov-type
-    tests for clustered or independent multistate process data. Methods
-    are based on Bakoyannis (2021) <doi:10.1111/biom.13327> and use the
+    tests for clustered or independent multistate process data.
+    Estimation follows Bakoyannis (2021) <doi:10.1111/biom.13327>;
+    two-sample inference for the cluster-randomized and
+    independent-samples designs follows Bakoyannis and Bandyopadhyay
+    (2022) <doi:10.1007/s10463-021-00819-x>. Both methods use the
     working-independence Aalen-Johansen estimator. The package supports
     both progressive (acyclic) and non-monotone (e.g., illness-death
     with recovery) multistate processes, right censoring, left

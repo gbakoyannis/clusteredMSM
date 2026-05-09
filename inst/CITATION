@@ -1,3 +1,7 @@
+citHeader(
+  "To cite clusteredMSM in publications, please cite the methodological papers:"
+)
+
 bibentry(
   bibtype  = "Article",
   title    = "Nonparametric analysis of nonhomogeneous multistate processes with clustered observations",
@@ -13,7 +17,25 @@ bibentry(
     "Bakoyannis, G. (2021).",
     "Nonparametric analysis of nonhomogeneous multistate processes with clustered observations.",
     "Biometrics, 77(2), 533-546. doi:10.1111/biom.13327"
-  ),
+  )
+)
 
-  header = "To cite clusteredMSM in publications, please use:"
+bibentry(
+  bibtype  = "Article",
+  title    = "Nonparametric tests for multistate processes with clustered data",
+  author   = c(person("Giorgos", "Bakoyannis"),
+               person("Dipankar", "Bandyopadhyay")),
+  journal  = "Annals of the Institute of Statistical Mathematics",
+  year     = "2022",
+  volume   = "74",
+  number   = "5",
+  pages    = "837-867",
+  doi      = "10.1007/s10463-021-00819-x",
+
+  textVersion = paste(
+    "Bakoyannis, G., & Bandyopadhyay, D. (2022).",
+    "Nonparametric tests for multistate processes with clustered data.",
+    "Annals of the Institute of Statistical Mathematics, 74(5), 837-867.",
+    "doi:10.1007/s10463-021-00819-x"
+  )
 )

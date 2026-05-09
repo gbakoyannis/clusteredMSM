@@ -257,6 +257,64 @@ Strict rules, applied in order — stop on first violation:
   \log \hat P|}; the simultaneous band uses the same delta-method
   \eqn{\mathrm{SE}_g} to studentize cloglog residuals computed from
   the existing replicate matrix. One bootstrap, one scale.
+- **Two-sample test scaling depends on the asymptotic regime, not on
+  the bootstrap scheme.** `ks_pvalue(diff_point, diff_boot, scale)`
+  multiplies both the observed sup-statistic and the
+  centered-bootstrap analogue by `scale`; the empirical p-value is
+  invariant to `scale` but the reported statistic is on the correct
+  asymptotic scale:
+    - `design = "shared"` (case i, all clusters carry both groups,
+      multicenter): `scale = sqrt(n)`, n = total clusters.
+      Bakoyannis (2021) Theorem 3.
+    - `design = "cluster_random"` or `"indep_random"` (case ii.a /
+      ii.b, two-independent-samples regime):
+      `scale = sqrt(n_1 * n_2 / (n_1 + n_2))`. Bakoyannis &
+      Bandyopadhyay (2022) Theorem 2.
+- **The bootstrap differs across the two-sample regimes:**
+    - `"shared"`: unstratified cluster bootstrap.
+    - `"cluster_random"`: cluster bootstrap stratified by group
+      (`cluster_boot(..., strata = cluster_to_group)`); fixes per-
+      group cluster counts at \eqn{n_1, n_2}. Justified by the
+      randomization-by-design assumption.
+    - `"indep_random"`: unstratified cluster bootstrap (\eqn{n_1, n_2}
+      may vary across replicates). Same scaling as
+      `"cluster_random"`, but the bootstrap is *not* stratified
+      because \eqn{n_1, n_2} are random in the data-generating
+      process.
+- **Stratified resampling** is opt-in via `cluster_boot(..., strata
+  = ...)`. `strata` is a named vector mapping cluster ID (as
+  character) to stratum label. Per-stratum cluster counts are
+  preserved in every replicate.
+
+### Two-sample designs
+
+`patp()` accepts a `design` argument with values `"auto"` (default),
+`"shared"`, `"cluster_random"`, `"indep_random"`. The supported
+regimes:
+
+- **Case (i): `"shared"` -- dependent groups (multicenter).** Every
+  cluster carries both groups. Unstratified bootstrap; `sqrt(n)`
+  scaling. Bakoyannis (2021).
+- **Case (ii.a): `"cluster_random"` -- cluster-randomized trial.**
+  Each cluster carries one group, \eqn{n_1, n_2} fixed by the
+  randomization. Stratified-by-group bootstrap;
+  `sqrt(n_1 n_2 / (n_1 + n_2))` scaling. Bakoyannis &
+  Bandyopadhyay (2022). Must be opted into by the user --
+  `"auto"` will not select it.
+- **Case (ii.b): `"indep_random"` -- independent observational
+  comparison.** Each cluster carries one group, but \eqn{n_1, n_2}
+  are random. Unstratified bootstrap; same scaling as ii.a.
+- **Case (iii): mixed cluster structure** (some clusters carry both
+  groups, some only one) is not supported in v0.1; errors in every
+  regime. Planned for v0.2 alongside the linear and \eqn{L^2} tests.
+
+`design = "auto"` infers the regime from the data: all-clusters-
+both -> `"shared"` (silent, unambiguous); all-clusters-one ->
+`"indep_random"` *with a warning* nudging the user to opt into
+`"cluster_random"` if the per-group cluster counts were fixed by
+randomization; mixed -> error. Validation happens inside
+`.patp_twosample` *before* any bootstrap work, so users get a fast
+and informative error.
 
 ## Performance notes
 

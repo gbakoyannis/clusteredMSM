@@ -8,16 +8,16 @@ make_simple_fit <- function(B = 50, two_sample = FALSE) {
       t_dth <- rexp(1, 0.3)
       if (t_ill < t_dth) {
         rows[[length(rows)+1L]] <- data.frame(
-          pid = k, site = c, arm = c %% 2,
+          pid = k, site = c, arm = i %% 2,
           t0 = 0, t1 = t_ill, s0 = 1L, s1 = 2L
         )
         rows[[length(rows)+1L]] <- data.frame(
-          pid = k, site = c, arm = c %% 2,
+          pid = k, site = c, arm = i %% 2,
           t0 = t_ill, t1 = t_ill + 0.5, s0 = 2L, s1 = 3L
         )
       } else {
         rows[[length(rows)+1L]] <- data.frame(
-          pid = k, site = c, arm = c %% 2,
+          pid = k, site = c, arm = i %% 2,
           t0 = 0, t1 = t_dth, s0 = 1L, s1 = 3L
         )
       }

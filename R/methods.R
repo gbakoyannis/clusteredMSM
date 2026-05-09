@@ -34,6 +34,14 @@ print.patp <- function(x, digits = max(3L, getOption("digits") - 3L), ...) {
 
   if (!is.null(x$test)) {
     cat("\nTwo-sample test (", x$test$type, "):\n", sep = "")
+    d_label <- if (is.null(x$design)) "shared" else x$design
+    design_str <- switch(d_label,
+      shared         = "shared (multicenter, dependent groups)",
+      cluster_random = "cluster-randomized (independent groups, fixed n_1, n_2)",
+      indep_random   = "independent samples (random n_1, n_2)",
+      d_label
+    )
+    cat("  Design:    ", design_str, "\n", sep = "")
     cat("  Groups:    ", paste(x$groups, collapse = " vs "), "\n", sep = "")
     cat("  Statistic: ", format(x$test$statistic, digits = digits), "\n",
         sep = "")

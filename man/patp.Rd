@@ -17,6 +17,7 @@ patp(
   LMAJ = FALSE,
   B = 1000,
   cband = FALSE,
+  design = c("auto", "shared", "cluster_random", "indep_random"),
   level = 0.95,
   seed = NULL
 )
@@ -59,6 +60,18 @@ Default 1000.}
 \item{cband}{Logical. If \code{TRUE}, return 95\% simultaneous
 confidence band limits (recommended \code{B >= 1000}).}
 
+\item{design}{Character, two-sample only. One of
+\code{"auto"} (default), \code{"shared"},
+\code{"cluster_random"}, \code{"indep_random"}. Selects the
+two-sample regime; see the \emph{Two-sample designs} section.
+\code{"auto"} infers the regime from the cluster/group
+structure of the data, defaulting to \code{"indep_random"} when
+each cluster carries a single group (a safer default than
+assuming randomization). When that fallback fires, a warning
+is emitted asking the user to set \code{"cluster_random"}
+explicitly if the per-group cluster counts were fixed by
+randomization.}
+
 \item{level}{Confidence level. Default 0.95.}
 
 \item{seed}{Optional integer for reproducible bootstrap.}
@@ -86,6 +99,42 @@ simultaneous confidence bands. If a grouping variable is supplied
 on the right-hand side of the formula, also conducts a two-sample
 Kolmogorov-Smirnov-type test of curve equality.
 }
+\section{Two-sample designs}{
+
+Three regimes are supported, each with its own bootstrap scheme
+and asymptotic scaling factor; the test statistic in every case is
+\eqn{T = c_n \sup_t |\hat P_1(t) - \hat P_0(t)|}.
+\describe{
+  \item{\code{"shared"} (case i): dependent groups (multicenter
+    trial).}{Every cluster contributes observations from both
+    groups -- e.g., each hospital randomizes its patients to
+    treatment or control. Unstratified cluster bootstrap;
+    \eqn{c_n = \sqrt{n}} (Bakoyannis 2021, Theorem 3), with
+    \eqn{n} the total number of clusters.}
+  \item{\code{"cluster_random"} (case ii.a): cluster-randomized
+    trial.}{Each cluster is assigned to exactly one group, with
+    per-group cluster counts \eqn{n_1, n_2} fixed by the
+    randomization. Stratified cluster bootstrap (resample within
+    each group); \eqn{c_n = \sqrt{n_1 n_2 / (n_1 + n_2)}}
+    (Bakoyannis & Bandyopadhyay 2022, Theorem 2). This regime
+    must be opted into; \code{"auto"} will not select it.}
+  \item{\code{"indep_random"} (case ii.b): independent
+    observational comparison.}{Each cluster carries one group,
+    but \eqn{n_1, n_2} are random (the population, not the
+    analyst, decided who landed in which group). Unstratified
+    cluster bootstrap; \eqn{c_n = \sqrt{n_1 n_2 / (n_1 + n_2)}}.
+    The asymptotic regime is the same two-independent-samples
+    limit as \code{"cluster_random"}; only the bootstrap
+    differs. This is the \code{"auto"} default when each cluster
+    carries a single group.}
+}
+Mixed structures (some clusters carry both groups, some only one)
+are not supported in this version.
+
+\code{patp()} validates the supplied data against the requested
+design and stops with an informative error if they disagree.
+}
+
 \section{Standard errors and confidence intervals}{
 
 The cluster bootstrap is run \emph{once}, on the original
@@ -134,8 +183,15 @@ tt
 }
 \references{
 Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous
-multistate processes with clustered observations. \emph{Biometrics},
-77(2), 533-546. \doi{10.1111/biom.13327}
+multistate processes with clustered observations.
+\emph{Biometrics}, 77(2), 533-546. \doi{10.1111/biom.13327}
+
+Bakoyannis, G., & Bandyopadhyay, D. (2022). Nonparametric tests
+for multistate processes with clustered data. \emph{Annals of the
+Institute of Statistical Mathematics}, 74(5), 837-867.
+\doi{10.1007/s10463-021-00819-x} (Source of the
+\eqn{\sqrt{n_1 n_2 / (n_1 + n_2)}} scaling used when
+\code{design} is \code{"cluster_random"} or \code{"indep_random"}.)
 }
 \seealso{
 \code{\link{msm}}, \code{\link{trans_mat}},

@@ -15,6 +15,13 @@
 #'   (the length must be the same across replicates -- typically achieved
 #'   by evaluating the statistic on a fixed grid of times).
 #' @param ... Additional arguments passed to \code{fn}.
+#' @param strata Optional named vector mapping each unique cluster ID
+#'   (as character) to a stratum label. When supplied, resampling is
+#'   stratified: in each replicate, the original number of clusters in
+#'   each stratum is drawn with replacement from the clusters in that
+#'   stratum (so per-stratum cluster counts are preserved across
+#'   replicates). When \code{NULL} (default), unstratified resampling
+#'   is used.
 #' @param seed Optional integer. If non-NULL, \code{set.seed(seed)} is
 #'   called before bootstrapping for reproducibility.
 #' @param verbose Logical. If \code{TRUE}, prints a progress message
@@ -34,6 +41,12 @@
 #' code treating cluster IDs as distinct labels (e.g., \code{tapply}
 #' aggregations) works correctly even when the same original cluster
 #' appears multiple times in a replicate.
+#'
+#' Stratified resampling (\code{strata}) supports cluster-randomized
+#' designs in which each cluster belongs to a single group (case ii of
+#' Bakoyannis & Bandyopadhyay 2022): the per-stratum cluster counts
+#' are fixed across replicates, so a replicate can never wipe out one
+#' of the groups.
 #'
 #' The bootstrap is statistic-agnostic: the same engine is used for
 #' point-estimator standard errors, two-sample tests, and confidence
@@ -57,7 +70,7 @@
 #'
 #' @export
 cluster_boot <- function(data, cid, B, fn, ...,
-                         seed = NULL, verbose = FALSE) {
+                         strata = NULL, seed = NULL, verbose = FALSE) {
 
   if (!is.data.frame(data)) stop("'data' must be a data frame")
   if (!cid %in% names(data)) stop("column '", cid, "' not found in data")
@@ -70,6 +83,31 @@ cluster_boot <- function(data, cid, B, fn, ...,
 
   cluster_ids <- unique(data[[cid]])
   n <- length(cluster_ids)
+
+  ## Build the per-replicate cluster sampler. Two modes:
+  ##   - unstratified: sample n clusters with replacement from all clusters
+  ##   - stratified:   for each stratum, sample its cluster count with
+  ##                   replacement from the clusters in that stratum
+  if (is.null(strata)) {
+    sample_clusters <- function() sample(cluster_ids, n, replace = TRUE)
+  } else {
+    if (is.null(names(strata))) {
+      stop("'strata' must be a named vector (names = cluster IDs)")
+    }
+    cid_chr <- as.character(cluster_ids)
+    missing_in_strata <- setdiff(cid_chr, names(strata))
+    if (length(missing_in_strata) > 0L) {
+      stop("'strata' is missing entries for cluster IDs: ",
+           paste(utils::head(missing_in_strata, 5L), collapse = ", "))
+    }
+    strata_aligned <- unname(strata[cid_chr])
+    by_stratum <- split(cluster_ids, strata_aligned)
+    sample_clusters <- function() {
+      drawn <- lapply(by_stratum, function(ids)
+        sample(ids, length(ids), replace = TRUE))
+      unlist(drawn, use.names = FALSE)
+    }
+  }
 
   # Pre-split data by cluster for fast subsetting in the loop
   cluster_rows <- split(seq_len(nrow(data)), data[[cid]])
@@ -90,12 +128,13 @@ cluster_boot <- function(data, cid, B, fn, ...,
   }
 
   for (b in seq_len(B)) {
-    drawn <- sample(cluster_ids, n, replace = TRUE)
+    drawn <- sample_clusters()
+    n_drawn <- length(drawn)
 
-    # Build the bootstrap data frame. Re-ID clusters 1..n so duplicates
+    # Build the bootstrap data frame. Re-ID clusters 1..n_drawn so duplicates
     # are kept distinct for downstream cluster-aware operations.
-    pieces <- vector("list", n)
-    for (k in seq_len(n)) {
+    pieces <- vector("list", n_drawn)
+    for (k in seq_len(n_drawn)) {
       rows <- cluster_rows[[as.character(drawn[k])]]
       d <- data[rows, , drop = FALSE]
       d[[cid]] <- k

@@ -12,12 +12,21 @@
   simultaneous confidence bands.
 * Two-sample Kolmogorov-Smirnov-type test, dispatched automatically
   when a grouping variable appears on the formula's right-hand side.
+  Three regimes via a `design` argument: `"shared"` (multicenter,
+  every cluster carries both groups), `"cluster_random"`
+  (cluster-randomized trial, stratified bootstrap), and
+  `"indep_random"` (independent observational comparison,
+  unstratified bootstrap). `"auto"` infers the regime from the data.
 * Native support for non-monotone (recovery) multistate processes via
   a generic product-integral estimator (`prodint_AJ()`).
 * Self-contained: depends only on `survival` (which ships with R).
   Removes the dependency on `mstate` that limited earlier
   implementations to progressive models.
-* Methods based on Bakoyannis (2021) <doi:10.1111/biom.13327>.
+* Estimation methodology from Bakoyannis (2021)
+  <doi:10.1111/biom.13327>; two-sample inference for the
+  cluster-randomized and independent-samples designs follows
+  Bakoyannis and Bandyopadhyay (2022)
+  <doi:10.1007/s10463-021-00819-x>.
 
 ## Public API
 

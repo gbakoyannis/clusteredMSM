@@ -160,30 +160,39 @@ confidence_band <- function(point, boot, times,
 #' @param diff_boot Numeric matrix. Cluster bootstrap replicates of the
 #'   group difference: rows = time points (matching \code{diff_point}),
 #'   columns = replicates.
-#' @param n Integer. Number of independent clusters in the pooled sample.
+#' @param scale Numeric scalar. Asymptotic scaling factor applied to
+#'   both the observed sup-statistic and the bootstrap analogue.
+#'   Use \eqn{\sqrt{n}} (\eqn{n} = total clusters) for the
+#'   dependent-groups design (Bakoyannis 2021, Theorem 3); use
+#'   \eqn{\sqrt{n_1 n_2 / (n_1 + n_2)}} for the cluster-randomized
+#'   design (Bakoyannis & Bandyopadhyay 2022, Theorem 2).
 #'
 #' @return A list with elements \code{statistic} (the observed
-#'   sup-statistic) and \code{p.value}.
+#'   sup-statistic, on the chosen scale) and \code{p.value}.
 #'
 #' @details
-#' The test statistic is \eqn{T_n = \sqrt{n} \sup_t | \hat P_1(t) -
-#' \hat P_0(t) |}, with the null distribution approximated by the
-#' bootstrap analogue applied to centered bootstrap differences.
+#' The test statistic is \eqn{T = c_n \sup_t | \hat P_1(t) -
+#' \hat P_0(t) |} with \eqn{c_n =} \code{scale}, and the null
+#' distribution is approximated by the bootstrap analogue applied to
+#' centered bootstrap differences. The empirical p-value is invariant
+#' to \code{scale} (it appears on both sides of the comparison); the
+#' role of \code{scale} is to put the reported statistic on the
+#' correct asymptotic scale per the relevant theorem.
 #'
 #' @keywords internal
 #' @export
-ks_pvalue <- function(diff_point, diff_boot, n) {
+ks_pvalue <- function(diff_point, diff_boot, scale) {
 
   if (nrow(diff_boot) != length(diff_point)) {
     stop("nrow(diff_boot) must equal length(diff_point)")
   }
 
-  T_obs <- sqrt(n) * max(abs(diff_point), na.rm = TRUE)
+  T_obs <- scale * max(abs(diff_point), na.rm = TRUE)
 
   # Bootstrap analogue: center each bootstrap diff around the observed
-  # diff (Bakoyannis 2020 Section 3.2)
+  # diff (Bakoyannis & Bandyopadhyay 2022, Section 3).
   centered <- sweep(diff_boot, 1, diff_point, FUN = "-")
-  T_boot   <- sqrt(n) * apply(abs(centered), 2, max, na.rm = TRUE)
+  T_boot   <- scale * apply(abs(centered), 2, max, na.rm = TRUE)
 
   list(statistic = T_obs,
        p.value   = mean(T_boot >= T_obs, na.rm = TRUE))

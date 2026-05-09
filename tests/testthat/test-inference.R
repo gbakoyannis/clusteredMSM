@@ -132,7 +132,7 @@ test_that("ks_pvalue is in [0, 1] and reflects observed statistic", {
   diff_point <- stats::rnorm(50, 0, 0.05)
   diff_boot  <- matrix(stats::rnorm(50 * 500, 0, 0.05), 50, 500)
 
-  ks <- ks_pvalue(diff_point, diff_boot, n = 100)
+  ks <- ks_pvalue(diff_point, diff_boot, scale = sqrt(100))
   expect_named(ks, c("statistic", "p.value"))
   expect_true(ks$p.value >= 0 && ks$p.value <= 1)
   expect_true(ks$statistic >= 0)
@@ -146,7 +146,7 @@ test_that("ks_pvalue rejects under large observed difference", {
   diff_point <- rep(0.5, 30)
   diff_boot  <- matrix(stats::rnorm(30 * 200, 0.5, 0.01), 30, 200)
 
-  ks <- ks_pvalue(diff_point, diff_boot, n = 100)
+  ks <- ks_pvalue(diff_point, diff_boot, scale = sqrt(100))
   expect_lt(ks$p.value, 0.05)
 })
 
@@ -156,6 +156,6 @@ test_that("ks_pvalue does not reject under small observed difference", {
   diff_point <- stats::rnorm(30, 0, 0.01)
   diff_boot  <- matrix(stats::rnorm(30 * 500, 0, 0.1), 30, 500)
 
-  ks <- ks_pvalue(diff_point, diff_boot, n = 100)
+  ks <- ks_pvalue(diff_point, diff_boot, scale = sqrt(100))
   expect_gt(ks$p.value, 0.05)
 })

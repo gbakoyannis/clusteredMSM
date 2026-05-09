@@ -4,7 +4,16 @@
 \alias{cluster_boot}
 \title{Generic Cluster Bootstrap Engine}
 \usage{
-cluster_boot(data, cid, B, fn, ..., seed = NULL, verbose = FALSE)
+cluster_boot(
+  data,
+  cid,
+  B,
+  fn,
+  ...,
+  strata = NULL,
+  seed = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{data}{A data frame containing the cluster ID column named by
@@ -21,6 +30,14 @@ bootstrap replicate. Must return a numeric vector of fixed length
 by evaluating the statistic on a fixed grid of times).}
 
 \item{...}{Additional arguments passed to \code{fn}.}
+
+\item{strata}{Optional named vector mapping each unique cluster ID
+(as character) to a stratum label. When supplied, resampling is
+stratified: in each replicate, the original number of clusters in
+each stratum is drawn with replacement from the clusters in that
+stratum (so per-stratum cluster counts are preserved across
+replicates). When \code{NULL} (default), unstratified resampling
+is used.}
 
 \item{seed}{Optional integer. If non-NULL, \code{set.seed(seed)} is
 called before bootstrapping for reproducibility.}
@@ -49,6 +66,12 @@ Resampled clusters are re-IDed (1, 2, ..., n) so that downstream
 code treating cluster IDs as distinct labels (e.g., \code{tapply}
 aggregations) works correctly even when the same original cluster
 appears multiple times in a replicate.
+
+Stratified resampling (\code{strata}) supports cluster-randomized
+designs in which each cluster belongs to a single group (case ii of
+Bakoyannis & Bandyopadhyay 2022): the per-stratum cluster counts
+are fixed across replicates, so a replicate can never wipe out one
+of the groups.
 
 The bootstrap is statistic-agnostic: the same engine is used for
 point-estimator standard errors, two-sample tests, and confidence

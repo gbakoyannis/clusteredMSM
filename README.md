@@ -5,8 +5,11 @@ Nonparametric analysis of clustered multistate process data.
 `clusteredMSM` provides population-averaged transition probability
 estimates, pointwise confidence intervals, simultaneous confidence
 bands, and two-sample Kolmogorov-Smirnov-type tests for multistate
-process data with cluster-correlated observations. Methods are based
-on [Bakoyannis (2021)](https://doi.org/10.1111/biom.13327) and use the
+process data with cluster-correlated observations. Estimation follows
+[Bakoyannis (2021)](https://doi.org/10.1111/biom.13327); two-sample
+inference for the cluster-randomized and independent-samples designs
+follows [Bakoyannis & Bandyopadhyay
+(2022)](https://doi.org/10.1007/s10463-021-00819-x). Both rest on the
 working-independence Aalen-Johansen estimator with a cluster-bootstrap
 variance.
 
@@ -140,13 +143,20 @@ with a clear message.
 
 ## Citation
 
-If you use `clusteredMSM` in your work, please cite:
+If you use `clusteredMSM` in your work, please cite the methodological
+papers:
 
 > Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous
 > multistate processes with clustered observations. *Biometrics*,
 > 77(2), 533-546. doi:10.1111/biom.13327
 
-You can retrieve the BibTeX entry within R via `citation("clusteredMSM")`.
+> Bakoyannis, G., & Bandyopadhyay, D. (2022). Nonparametric tests for
+> multistate processes with clustered data. *Annals of the Institute
+> of Statistical Mathematics*, 74(5), 837-867.
+> doi:10.1007/s10463-021-00819-x
+
+You can retrieve the BibTeX entries within R via
+`citation("clusteredMSM")`.
 
 ## License
 

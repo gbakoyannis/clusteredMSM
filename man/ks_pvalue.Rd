@@ -4,7 +4,7 @@
 \alias{ks_pvalue}
 \title{Two-Sample Kolmogorov-Smirnov-Type Test via Cluster Bootstrap}
 \usage{
-ks_pvalue(diff_point, diff_boot, n)
+ks_pvalue(diff_point, diff_boot, scale)
 }
 \arguments{
 \item{diff_point}{Numeric vector. Observed group difference of the
@@ -14,11 +14,16 @@ point estimator (\eqn{\hat P_1 - \hat P_0}) on a fixed time grid.}
 group difference: rows = time points (matching \code{diff_point}),
 columns = replicates.}
 
-\item{n}{Integer. Number of independent clusters in the pooled sample.}
+\item{scale}{Numeric scalar. Asymptotic scaling factor applied to
+both the observed sup-statistic and the bootstrap analogue.
+Use \eqn{\sqrt{n}} (\eqn{n} = total clusters) for the
+dependent-groups design (Bakoyannis 2021, Theorem 3); use
+\eqn{\sqrt{n_1 n_2 / (n_1 + n_2)}} for the cluster-randomized
+design (Bakoyannis & Bandyopadhyay 2022, Theorem 2).}
 }
 \value{
 A list with elements \code{statistic} (the observed
-  sup-statistic) and \code{p.value}.
+  sup-statistic, on the chosen scale) and \code{p.value}.
 }
 \description{
 Computes a p-value for the null hypothesis that a transition
@@ -27,8 +32,12 @@ of the absolute difference between group-specific Aalen-Johansen
 estimators and a cluster-bootstrap reference distribution.
 }
 \details{
-The test statistic is \eqn{T_n = \sqrt{n} \sup_t | \hat P_1(t) -
-\hat P_0(t) |}, with the null distribution approximated by the
-bootstrap analogue applied to centered bootstrap differences.
+The test statistic is \eqn{T = c_n \sup_t | \hat P_1(t) -
+\hat P_0(t) |} with \eqn{c_n =} \code{scale}, and the null
+distribution is approximated by the bootstrap analogue applied to
+centered bootstrap differences. The empirical p-value is invariant
+to \code{scale} (it appears on both sides of the comparison); the
+role of \code{scale} is to put the reported statistic on the
+correct asymptotic scale per the relevant theorem.
 }
 \keyword{internal}

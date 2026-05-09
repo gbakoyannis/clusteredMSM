@@ -1,11 +1,28 @@
-# Helper: build a clustered illness-death dataset in interval format
-make_interval_data <- function(n_clusters = 20, per_cluster = 8, seed = 1) {
+# Helper: build a clustered illness-death dataset in interval format.
+#
+# `design` controls the cluster/group structure of `treatment`:
+#   * "case_i"   (default): every cluster carries both groups
+#                (groups mixed within cluster). Bakoyannis (2021).
+#   * "case_ii":  each cluster carries exactly one group
+#                (cluster-randomized). Bakoyannis & Bandyopadhyay (2022).
+#   * "case_iii": some clusters mixed, some single-group (NOT supported
+#                by patp(); used to test validation errors).
+make_interval_data <- function(n_clusters = 20, per_cluster = 8, seed = 1,
+                               design = c("case_i", "case_ii", "case_iii")) {
+  design <- match.arg(design)
   set.seed(seed)
   rows <- list()
   k <- 1L
   for (c in seq_len(n_clusters)) {
-    grp <- c %% 2
+    cluster_grp <- c %% 2     # used for case_ii and to seed case_iii decisions
     for (i in seq_len(per_cluster)) {
+      grp <- switch(design,
+        case_i   = i %% 2,
+        case_ii  = cluster_grp,
+        # case_iii: even-numbered clusters mixed (alternate by subject),
+        # odd-numbered clusters single-group (cluster_grp).
+        case_iii = if (c %% 2 == 0L) i %% 2 else cluster_grp
+      )
       ill_rate <- if (grp == 1) 0.8 else 0.4
       t_ill   <- rexp(1, rate = ill_rate)
       t_dth_h <- rexp(1, rate = 0.3)
@@ -163,16 +180,205 @@ test_that("patp seed produces reproducible results", {
 })
 
 test_that("patp two-sample detects substantial group differences", {
-  d <- make_interval_data(n_clusters = 30, per_cluster = 12, seed = 5)
+  d <- make_interval_data(n_clusters = 30, per_cluster = 12, seed = 3)
   tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
 
   fit <- patp(msm(t0, t1, s0, s1) ~ treatment,
               data = d, tmat = tmat,
               id = "pid", cluster = "site",
-              h = 1, j = 2, s = 0, B = 200, seed = 5)
+              h = 1, j = 2, s = 0, B = 200, seed = 3)
 
   # Group 1 has illness hazard 2x group 0
   expect_lt(fit$test$p.value, 0.10)
+})
+
+test_that("patp design = 'shared' works on case (i) data", {
+  d <- make_interval_data(design = "case_i")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  fit <- patp(msm(t0, t1, s0, s1) ~ treatment,
+              data = d, tmat = tmat,
+              id = "pid", cluster = "site",
+              h = 1, j = 2, s = 0, B = 50, seed = 1,
+              design = "shared")
+
+  expect_false(is.null(fit$test))
+  expect_identical(fit$design, "shared")
+})
+
+test_that("patp design = 'cluster_random' works on case (ii) data", {
+  d <- make_interval_data(design = "case_ii")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  fit <- patp(msm(t0, t1, s0, s1) ~ treatment,
+              data = d, tmat = tmat,
+              id = "pid", cluster = "site",
+              h = 1, j = 2, s = 0, B = 50, seed = 1,
+              design = "cluster_random")
+
+  expect_false(is.null(fit$test))
+  expect_identical(fit$design, "cluster_random")
+})
+
+test_that("patp design = 'indep_random' works on case (ii) data", {
+  d <- make_interval_data(design = "case_ii")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  fit <- patp(msm(t0, t1, s0, s1) ~ treatment,
+              data = d, tmat = tmat,
+              id = "pid", cluster = "site",
+              h = 1, j = 2, s = 0, B = 50, seed = 1,
+              design = "indep_random")
+
+  expect_false(is.null(fit$test))
+  expect_identical(fit$design, "indep_random")
+})
+
+test_that("patp design = 'auto' picks 'shared' on case (i) data", {
+  d <- make_interval_data(design = "case_i")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  fit <- patp(msm(t0, t1, s0, s1) ~ treatment,
+              data = d, tmat = tmat,
+              id = "pid", cluster = "site",
+              h = 1, j = 2, s = 0, B = 50, seed = 1)
+
+  expect_identical(fit$design, "shared")
+})
+
+test_that("patp design = 'auto' picks 'indep_random' on case (ii) data and warns", {
+  d <- make_interval_data(design = "case_ii")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  expect_warning(
+    fit <- patp(msm(t0, t1, s0, s1) ~ treatment,
+                data = d, tmat = tmat,
+                id = "pid", cluster = "site",
+                h = 1, j = 2, s = 0, B = 50, seed = 1),
+    "set design = 'cluster_random' explicitly"
+  )
+  expect_identical(fit$design, "indep_random")
+})
+
+test_that("patp design = 'auto' on case (i) does not warn", {
+  d <- make_interval_data(design = "case_i")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  expect_warning(
+    fit <- patp(msm(t0, t1, s0, s1) ~ treatment,
+                data = d, tmat = tmat,
+                id = "pid", cluster = "site",
+                h = 1, j = 2, s = 0, B = 50, seed = 1),
+    NA
+  )
+  expect_identical(fit$design, "shared")
+})
+
+test_that("patp design = 'indep_random' explicit does not warn", {
+  d <- make_interval_data(design = "case_ii")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  expect_warning(
+    patp(msm(t0, t1, s0, s1) ~ treatment,
+         data = d, tmat = tmat,
+         id = "pid", cluster = "site",
+         h = 1, j = 2, s = 0, B = 50, seed = 1,
+         design = "indep_random"),
+    NA
+  )
+})
+
+test_that("patp design = 'shared' errors on case (ii) data", {
+  d <- make_interval_data(design = "case_ii")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  expect_error(
+    patp(msm(t0, t1, s0, s1) ~ treatment,
+         data = d, tmat = tmat,
+         id = "pid", cluster = "site",
+         h = 1, j = 2, s = 0, B = 50, seed = 1,
+         design = "shared"),
+    "design = \"shared\" requires every cluster"
+  )
+})
+
+test_that("patp design = 'cluster_random' errors on case (i) data", {
+  d <- make_interval_data(design = "case_i")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  expect_error(
+    patp(msm(t0, t1, s0, s1) ~ treatment,
+         data = d, tmat = tmat,
+         id = "pid", cluster = "site",
+         h = 1, j = 2, s = 0, B = 50, seed = 1,
+         design = "cluster_random"),
+    "design = \"cluster_random\" requires each cluster"
+  )
+})
+
+test_that("patp design = 'indep_random' errors on case (i) data", {
+  d <- make_interval_data(design = "case_i")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  expect_error(
+    patp(msm(t0, t1, s0, s1) ~ treatment,
+         data = d, tmat = tmat,
+         id = "pid", cluster = "site",
+         h = 1, j = 2, s = 0, B = 50, seed = 1,
+         design = "indep_random"),
+    "design = \"indep_random\" requires each cluster"
+  )
+})
+
+test_that("patp errors on case (iii) data for every design", {
+  d <- make_interval_data(design = "case_iii")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  expect_error(
+    patp(msm(t0, t1, s0, s1) ~ treatment,
+         data = d, tmat = tmat,
+         id = "pid", cluster = "site",
+         h = 1, j = 2, s = 0, B = 50, seed = 1),
+    "Mixed cluster structure"
+  )
+  expect_error(
+    patp(msm(t0, t1, s0, s1) ~ treatment,
+         data = d, tmat = tmat,
+         id = "pid", cluster = "site",
+         h = 1, j = 2, s = 0, B = 50, seed = 1,
+         design = "shared"),
+    "design = \"shared\" requires every cluster"
+  )
+  expect_error(
+    patp(msm(t0, t1, s0, s1) ~ treatment,
+         data = d, tmat = tmat,
+         id = "pid", cluster = "site",
+         h = 1, j = 2, s = 0, B = 50, seed = 1,
+         design = "cluster_random"),
+    "design = \"cluster_random\" requires each cluster"
+  )
+  expect_error(
+    patp(msm(t0, t1, s0, s1) ~ treatment,
+         data = d, tmat = tmat,
+         id = "pid", cluster = "site",
+         h = 1, j = 2, s = 0, B = 50, seed = 1,
+         design = "indep_random"),
+    "design = \"indep_random\" requires each cluster"
+  )
+})
+
+test_that("patp design = 'cluster_random' errors without cluster column", {
+  d <- make_interval_data(design = "case_i")
+  tmat <- trans_mat(list(c(2, 3), 3, integer(0)))
+
+  expect_error(
+    patp(msm(t0, t1, s0, s1) ~ treatment,
+         data = d, tmat = tmat,
+         id = "pid",                    # no cluster
+         h = 1, j = 2, s = 0, B = 50, seed = 1,
+         design = "cluster_random"),
+    "design = \"cluster_random\" requires a cluster column"
+  )
 })
 
 test_that("patp runs with cband = TRUE and produces band columns", {

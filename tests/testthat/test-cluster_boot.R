@@ -95,6 +95,57 @@ test_that("cluster_boot validates input", {
                "numeric vector")
 })
 
+test_that("cluster_boot stratified resampling preserves stratum sizes", {
+  # 10 clusters, 6 in stratum "A", 4 in stratum "B"
+  data <- data.frame(
+    cid    = rep(1:10, each = 3),
+    stratum = rep(c(rep("A", 6), rep("B", 4)), each = 3),
+    x      = stats::rnorm(30)
+  )
+  cluster_to_stratum <- tapply(data$stratum, data$cid,
+                               function(x) as.character(x[1L]))
+  strata_vec <- as.character(cluster_to_stratum)
+  names(strata_vec) <- names(cluster_to_stratum)
+
+  # fn returns the per-replicate counts of the two strata in the resampled
+  # data. Each stratum's count (in subjects) should be exactly preserved.
+  out <- cluster_boot(
+    data, "cid", B = 50,
+    fn = function(d) c(sum(d$stratum == "A"), sum(d$stratum == "B")),
+    strata = strata_vec, seed = 11
+  )
+
+  # Original counts: 6 clusters x 3 rows = 18 in A; 4 x 3 = 12 in B.
+  expect_true(all(out[1, ] == 18))
+  expect_true(all(out[2, ] == 12))
+})
+
+test_that("cluster_boot stratified samples within stratum only", {
+  # 8 clusters split across two strata. Stratum A has cids 1..4 with
+  # mean x = 0; stratum B has cids 5..8 with mean x = 10. After
+  # stratified resampling, every replicate must contain at least one
+  # cluster from each stratum.
+  data <- data.frame(
+    cid     = rep(1:8, each = 5),
+    stratum = rep(c(rep("A", 4), rep("B", 4)), each = 5),
+    x       = c(stats::rnorm(20, mean = 0),
+                stats::rnorm(20, mean = 10))
+  )
+  cluster_to_stratum <- tapply(data$stratum, data$cid,
+                               function(x) as.character(x[1L]))
+  strata_vec <- as.character(cluster_to_stratum)
+  names(strata_vec) <- names(cluster_to_stratum)
+
+  out <- cluster_boot(
+    data, "cid", B = 100,
+    fn = function(d) {
+      as.numeric(c(any(d$stratum == "A"), any(d$stratum == "B")))
+    },
+    strata = strata_vec, seed = 7
+  )
+  expect_true(all(out == 1))
+})
+
 test_that("cluster_boot tolerates pathological replicates", {
   data <- make_clustered()
 
