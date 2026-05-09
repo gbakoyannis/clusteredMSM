@@ -9,9 +9,9 @@ confidence_band(point, boot, times, level = 0.95, trim = c(0.05, 0.95))
 \arguments{
 \item{point}{Numeric vector of point estimates over a time grid.}
 
-\item{boot}{Numeric matrix of bootstrap replicates: rows correspond
-to time points (matching \code{point}), columns to bootstrap
-replicates.}
+\item{boot}{Numeric matrix of bootstrap replicates of \code{point}
+on the original probability scale: rows correspond to time
+points (matching \code{point}), columns to bootstrap replicates.}
 
 \item{times}{Numeric vector of times matching the rows of \code{boot}
 and the entries of \code{point}.}
@@ -30,18 +30,20 @@ A list with elements \code{ll.band} and \code{ul.band}:
 }
 \description{
 Constructs a simultaneous (uniform-over-time) confidence band for a
-transition probability curve by working on the cloglog scale: each
-bootstrap replicate is transformed, the studentized supremum
+transition probability curve. The band is built on the cloglog
+scale: for each bootstrap replicate, the studentized supremum
 \eqn{\sup_t |g(\hat P_b(t)) - g(\hat P(t))| / \mathrm{SE}_g(t)} is
-computed for every replicate, the \code{level} quantile of those
-suprema is taken as the critical value, and the resulting band is
-back-transformed to the probability scale.
+computed, where \eqn{\mathrm{SE}_g(t)} is the delta-method SE on
+the cloglog scale. The \code{level} quantile of those suprema is
+the critical value, and the band is back-transformed to the
+probability scale.
 }
 \details{
-The bootstrap SD on the cloglog scale already estimates the
-standard error of \eqn{g(\hat P(t))} directly, so no further
-\eqn{\sqrt{n}} rescaling is applied. The studentized-supremum
-construction yields a band that is automatically variance-adapted
-over time.
+Only one bootstrap on the original (probability) scale is required:
+\eqn{\mathrm{SE}_g(t)} is obtained by the delta method from
+\eqn{\mathrm{SE}(\hat P(t)) = \mathrm{sd}(\hat P^*(t))}, and the
+cloglog values \eqn{g(\hat P_b(t))} are computed by transforming
+the existing replicates pointwise -- no separate cloglog-scale
+bootstrap is run.
 }
 \keyword{internal}

@@ -245,6 +245,18 @@ Strict rules, applied in order — stop on first violation:
   columns rather than crashing the whole bootstrap.
 - **Align jump times to a common grid** via `step_interp()` before
   assembling bootstrap matrices.
+- **Bootstrap once, on the original probability scale.** The cluster
+  bootstrap produces replicates of \eqn{P^*(t)}, matching Bakoyannis
+  (2021) Theorem 2 (\eqn{\sqrt{n}\{P^*(t) - \hat P(t)\}}). The
+  probability-scale SE is `apply(boot_mat, 1, sd, na.rm = TRUE)` --
+  do **not** divide by `sqrt(n)` (the bootstrap SD is already an
+  estimate of \eqn{\mathrm{SE}(\hat P(t))}).
+- **Cloglog CIs use the delta method**, not a separate cloglog-scale
+  bootstrap. `ci_cloglog(point, se)` takes the probability-scale SE
+  and applies \eqn{\mathrm{SE}_g = \mathrm{SE}(\hat P) / |\hat P
+  \log \hat P|}; the simultaneous band uses the same delta-method
+  \eqn{\mathrm{SE}_g} to studentize cloglog residuals computed from
+  the existing replicate matrix. One bootstrap, one scale.
 
 ## Performance notes
 

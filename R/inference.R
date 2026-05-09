@@ -1,16 +1,15 @@
 #' Pointwise Confidence Intervals via Complementary Log-Log Transformation
 #'
 #' Computes pointwise confidence intervals for a transition probability
-#' estimate by bootstrapping directly on the cloglog scale: each
-#' bootstrap replicate is transformed by \eqn{g(p) = \log(-\log p)}, the
-#' standard error is taken as the across-replicate \code{sd} of the
-#' transformed values, a symmetric interval is built on the cloglog
-#' scale, and the result is back-transformed to the probability scale.
+#' estimate using the cloglog transformation \eqn{g(p) = \log(-\log p)}
+#' with a delta-method standard error scaling. The bootstrap is run
+#' once, on the original probability scale, in line with Bakoyannis
+#' (2021) Theorem 2; the cloglog SE is then derived analytically.
 #'
 #' @param point Numeric vector of point estimates in (0, 1), length T.
-#' @param boot  Numeric matrix of bootstrap replicates of \code{point}:
-#'   \code{nrow(boot) == length(point)} (rows index time points,
-#'   columns index replicates), as produced by \code{cluster_boot()}.
+#' @param se Numeric vector of bootstrap standard errors of \code{point}
+#'   on the probability scale, same length as \code{point} (i.e.
+#'   \code{apply(boot_matrix, 1, sd, na.rm = TRUE)}).
 #' @param level Confidence level. Default 0.95.
 #'
 #' @return A list with elements \code{ll} and \code{ul}: numeric vectors
@@ -18,50 +17,41 @@
 #'   \code{point}.
 #'
 #' @details
-#' Bootstrapping on the cloglog scale avoids the delta-method
-#' approximation that an earlier implementation used (and which had
-#' incorrect coverage when the bootstrap SE was passed in already on
-#' the probability scale). The cloglog transformation is monotone
-#' \emph{decreasing} on (0, 1), so the upper end of the interval on
-#' the cloglog scale corresponds to the \emph{lower} end on the
-#' probability scale, and vice versa.
+#' By the delta method,
+#' \eqn{\mathrm{SE}(g(\hat P)) = \mathrm{SE}(\hat P) / |\hat P \log \hat P|}
+#' (here \eqn{|g'(p)| = 1/|p \log p|} on (0,1)). The interval is built
+#' symmetrically on the cloglog scale and back-transformed via
+#' \eqn{p = \exp(-\exp(\cdot))}. Because \eqn{g} is monotone
+#' decreasing on (0, 1), the upper end on the cloglog scale becomes
+#' the \emph{lower} end on the probability scale, and vice versa.
 #'
 #' For point estimates exactly equal to 0 or 1 the cloglog is
-#' undefined, and \code{NA} is returned for both limits at those
-#' positions. Bootstrap replicates outside (0, 1) are masked to
-#' \code{NA} when computing the cloglog-scale standard error.
+#' undefined and \code{NA} is returned at those positions.
 #'
 #' @keywords internal
 #' @export
-ci_cloglog <- function(point, boot, level = 0.95) {
+ci_cloglog <- function(point, se, level = 0.95) {
 
-  if (!is.matrix(boot)) {
-    stop("'boot' must be a numeric matrix (rows = time points, cols = replicates)")
-  }
-  if (nrow(boot) != length(point)) {
-    stop("nrow(boot) must equal length(point)")
+  if (length(point) != length(se)) {
+    stop("'point' and 'se' must have the same length")
   }
 
   z <- stats::qnorm(1 - (1 - level) / 2)
 
   ll <- ul <- rep(NA_real_, length(point))
-  ok <- !is.na(point) & point > 0 & point < 1
+  ok <- !is.na(point) & point > 0 & point < 1 &
+        !is.na(se)   & is.finite(se)
 
   if (!any(ok)) return(list(ll = ll, ul = ul))
 
-  g_boot <- boot[ok, , drop = FALSE]
-  invalid <- !is.finite(g_boot) | g_boot <= 0 | g_boot >= 1
-  g_boot[invalid] <- NA_real_
-  g_boot <- log(-log(g_boot))
+  P    <- point[ok]
+  g_P  <- log(-log(P))
+  se_g <- se[ok] / abs(P * log(P))   # delta-method scaling, |g'(p)| = 1/|p log p|
 
-  g_point <- log(-log(point[ok]))
-  se_g    <- apply(g_boot, 1L, stats::sd, na.rm = TRUE)
-
-  # g(p) = log(-log p) is monotone decreasing on (0, 1):
-  # the upper end on the cloglog scale gives the lower end on the
-  # probability scale after back-transformation by exp(-exp(.)).
-  ll[ok] <- exp(-exp(g_point + z * se_g))
-  ul[ok] <- exp(-exp(g_point - z * se_g))
+  # g is decreasing on (0, 1):
+  # upper end on cloglog scale -> lower end on probability scale.
+  ll[ok] <- exp(-exp(g_P + z * se_g))
+  ul[ok] <- exp(-exp(g_P - z * se_g))
 
   list(ll = ll, ul = ul)
 }
@@ -70,17 +60,18 @@ ci_cloglog <- function(point, boot, level = 0.95) {
 #' Simultaneous Confidence Band via Cluster-Bootstrap Quantile
 #'
 #' Constructs a simultaneous (uniform-over-time) confidence band for a
-#' transition probability curve by working on the cloglog scale: each
-#' bootstrap replicate is transformed, the studentized supremum
+#' transition probability curve. The band is built on the cloglog
+#' scale: for each bootstrap replicate, the studentized supremum
 #' \eqn{\sup_t |g(\hat P_b(t)) - g(\hat P(t))| / \mathrm{SE}_g(t)} is
-#' computed for every replicate, the \code{level} quantile of those
-#' suprema is taken as the critical value, and the resulting band is
-#' back-transformed to the probability scale.
+#' computed, where \eqn{\mathrm{SE}_g(t)} is the delta-method SE on
+#' the cloglog scale. The \code{level} quantile of those suprema is
+#' the critical value, and the band is back-transformed to the
+#' probability scale.
 #'
 #' @param point Numeric vector of point estimates over a time grid.
-#' @param boot Numeric matrix of bootstrap replicates: rows correspond
-#'   to time points (matching \code{point}), columns to bootstrap
-#'   replicates.
+#' @param boot Numeric matrix of bootstrap replicates of \code{point}
+#'   on the original probability scale: rows correspond to time
+#'   points (matching \code{point}), columns to bootstrap replicates.
 #' @param times Numeric vector of times matching the rows of \code{boot}
 #'   and the entries of \code{point}.
 #' @param level Confidence level. Default 0.95.
@@ -94,11 +85,12 @@ ci_cloglog <- function(point, boot, level = 0.95) {
 #'   range or where \code{point} is at the boundary 0/1.
 #'
 #' @details
-#' The bootstrap SD on the cloglog scale already estimates the
-#' standard error of \eqn{g(\hat P(t))} directly, so no further
-#' \eqn{\sqrt{n}} rescaling is applied. The studentized-supremum
-#' construction yields a band that is automatically variance-adapted
-#' over time.
+#' Only one bootstrap on the original (probability) scale is required:
+#' \eqn{\mathrm{SE}_g(t)} is obtained by the delta method from
+#' \eqn{\mathrm{SE}(\hat P(t)) = \mathrm{sd}(\hat P^*(t))}, and the
+#' cloglog values \eqn{g(\hat P_b(t))} are computed by transforming
+#' the existing replicates pointwise -- no separate cloglog-scale
+#' bootstrap is run.
 #'
 #' @keywords internal
 #' @export
@@ -126,16 +118,22 @@ confidence_band <- function(point, boot, times,
               times >= qs[1] & times <= qs[2]
   if (!any(in_range)) return(na_band())
 
-  g_point <- log(-log(point[in_range]))
-  g_boot  <- boot[in_range, , drop = FALSE]
-  invalid <- !is.finite(g_boot) | g_boot <= 0 | g_boot >= 1
-  g_boot[invalid] <- NA_real_
-  g_boot <- log(-log(g_boot))
+  P    <- point[in_range]
+  B_in <- boot[in_range, , drop = FALSE]
 
-  se_g <- apply(g_boot, 1L, stats::sd, na.rm = TRUE)
+  # Probability-scale SE of P_hat, then delta-method cloglog SE.
+  se   <- apply(B_in, 1L, stats::sd, na.rm = TRUE)
+  se_g <- se / abs(P * log(P))
 
-  # Studentized residuals on cloglog scale, replicate-by-replicate sup
-  resid <- abs(sweep(g_boot, 1L, g_point, FUN = "-")) / se_g
+  # Cloglog of P_hat and of replicates; mask invalid replicate values.
+  g_P     <- log(-log(P))
+  invalid <- !is.finite(B_in) | B_in <= 0 | B_in >= 1
+  G       <- B_in
+  G[invalid] <- NA_real_
+  G       <- log(-log(G))
+
+  # Studentized residuals on cloglog scale; replicate-by-replicate sup
+  resid <- abs(sweep(G, 1L, g_P, FUN = "-")) / se_g
   sups  <- apply(resid, 2L, max, na.rm = TRUE)
   sups  <- sups[is.finite(sups)]
   if (length(sups) == 0L) return(na_band())
@@ -143,8 +141,8 @@ confidence_band <- function(point, boot, times,
 
   ll.band <- ul.band <- rep(NA_real_, length(point))
   # g is decreasing => upper-cloglog = lower-probability
-  ll.band[in_range] <- exp(-exp(g_point + c_a * se_g))
-  ul.band[in_range] <- exp(-exp(g_point - c_a * se_g))
+  ll.band[in_range] <- exp(-exp(g_P + c_a * se_g))
+  ul.band[in_range] <- exp(-exp(g_P - c_a * se_g))
 
   list(ll.band = ll.band, ul.band = ul.band)
 }

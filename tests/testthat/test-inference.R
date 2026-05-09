@@ -1,6 +1,84 @@
-## Helper: build a T x B matrix of bootstrap replicates with given
-## per-row mean (point) and sd (se), under a fixed seed.
-make_boot <- function(point, se, B = 2000, seed = 1) {
+test_that("ci_cloglog returns bounds straddling the point estimate", {
+  point <- c(0.2, 0.5, 0.8)
+  se    <- c(0.05, 0.05, 0.05)
+  ci <- ci_cloglog(point, se)
+
+  expect_named(ci, c("ll", "ul"))
+  expect_true(all(ci$ll < point))
+  expect_true(all(ci$ul > point))
+  expect_true(all(ci$ll > 0 & ci$ul < 1))
+})
+
+test_that("ci_cloglog matches hand-computed delta-method interval", {
+  ## P_hat = 0.1, SE on probability scale = 0.02:
+  ##   g(0.1)        ~= 0.8340
+  ##   |g'(0.1)|     = 1/(0.1 * |log 0.1|) ~= 4.3429
+  ##   se_g          ~= 4.3429 * 0.02 ~= 0.0869
+  ##   95% CI(cloglog) = 0.8340 +/- 1.96 * 0.0869
+  ##   Back-transform  -> (0.0652, 0.1434)
+  ci <- ci_cloglog(point = 0.1, se = 0.02, level = 0.95)
+  expect_equal(ci$ll, 0.0652, tolerance = 1e-3)
+  expect_equal(ci$ul, 0.1434, tolerance = 1e-3)
+  expect_true(ci$ll < 0.1 && 0.1 < ci$ul)
+  expect_true(ci$ll > 0  && ci$ul < 1)
+})
+
+test_that("ci_cloglog handles boundary point estimates with NA", {
+  point <- c(0, 0.5, 1)
+  se    <- c(0.1, 0.1, 0.1)
+  ci <- ci_cloglog(point, se)
+
+  expect_true(is.na(ci$ll[1]))
+  expect_true(is.na(ci$ul[1]))
+  expect_false(is.na(ci$ll[2]))
+  expect_true(is.na(ci$ll[3]))
+})
+
+test_that("ci_cloglog narrows with smaller SE", {
+  point <- rep(0.5, 3)
+  ci_wide   <- ci_cloglog(point, rep(0.10, 3))
+  ci_narrow <- ci_cloglog(point, rep(0.01, 3))
+
+  expect_true(all(ci_narrow$ul - ci_narrow$ll <
+                  ci_wide$ul   - ci_wide$ll))
+})
+
+test_that("ci_cloglog level argument widens the interval", {
+  point <- 0.5
+  se    <- 0.05
+  ci_95 <- ci_cloglog(point, se, level = 0.95)
+  ci_99 <- ci_cloglog(point, se, level = 0.99)
+
+  expect_true(ci_99$ul - ci_99$ll > ci_95$ul - ci_95$ll)
+})
+
+test_that("ci_cloglog: doubling SE roughly doubles cloglog-scale width", {
+  point <- 0.3
+  ci1 <- ci_cloglog(point, se = 0.02)
+  ci2 <- ci_cloglog(point, se = 0.04)
+
+  g       <- function(p) log(-log(p))
+  width_g <- function(ci) g(ci$ll) - g(ci$ul)  # g is decreasing
+  expect_equal(width_g(ci2) / width_g(ci1), 2, tolerance = 1e-12)
+})
+
+test_that("ci_cloglog: bounds in (0,1) and bracket the point", {
+  set.seed(7)
+  point <- stats::runif(20, 0.05, 0.95)
+  se    <- rep(0.05, 20)
+  ci    <- ci_cloglog(point, se)
+
+  expect_true(all(ci$ll > 0 & ci$ll < point))
+  expect_true(all(ci$ul > point & ci$ul < 1))
+})
+
+test_that("ci_cloglog validates input lengths", {
+  expect_error(ci_cloglog(c(0.3, 0.5), c(0.1)), "same length")
+})
+
+
+## Helper for confidence_band tests: T x B replicate matrix.
+make_boot <- function(point, se, B = 500, seed = 1) {
   set.seed(seed)
   T_ <- length(point)
   if (length(se) == 1L) se <- rep(se, T_)
@@ -9,100 +87,6 @@ make_boot <- function(point, se, B = 2000, seed = 1) {
                       sd   = rep(se,    B)),
          nrow = T_, ncol = B)
 }
-
-test_that("ci_cloglog returns bounds straddling the point estimate", {
-  point <- c(0.2, 0.5, 0.8)
-  boot  <- make_boot(point, 0.05)
-  ci <- ci_cloglog(point, boot)
-
-  expect_named(ci, c("ll", "ul"))
-  expect_true(all(ci$ll < point))
-  expect_true(all(ci$ul > point))
-  expect_true(all(ci$ll > 0 & ci$ul < 1))
-})
-
-test_that("ci_cloglog matches hand-computed cloglog-scale interval", {
-  ## Hand-computation for P_hat = 0.1, replicates ~ N(0.1, 0.02^2):
-  ##   g(0.1) = log(-log(0.1)) ~= 0.8340
-  ##   |g'(0.1)| = 1/(0.1 * |log(0.1)|) ~= 4.3429
-  ##   SE_g ~= 4.3429 * 0.02 ~= 0.0869
-  ##   95% CI on cloglog scale: 0.8340 +/- 1.96 * 0.0869
-  ##   Back-transform: ~ (0.066, 0.143)
-  P_hat <- 0.1
-  boot  <- make_boot(P_hat, 0.02, B = 1000, seed = 42)
-
-  ci <- ci_cloglog(P_hat, boot, level = 0.95)
-  ## Tolerances loose enough to absorb finite-sample (B=1000) noise
-  ## around the asymptotic delta-method values 0.066 / 0.143.
-  expect_equal(ci$ll, 0.066, tolerance = 0.10)
-  expect_equal(ci$ul, 0.143, tolerance = 0.10)
-  expect_true(ci$ll < P_hat && P_hat < ci$ul)
-  expect_true(ci$ll > 0 && ci$ul < 1)
-})
-
-test_that("ci_cloglog handles boundary point estimates with NA", {
-  point <- c(0, 0.5, 1)
-  boot  <- make_boot(point, 0.05)
-  ci <- ci_cloglog(point, boot)
-
-  expect_true(is.na(ci$ll[1]))
-  expect_true(is.na(ci$ul[1]))
-  expect_false(is.na(ci$ll[2]))
-  expect_true(is.na(ci$ll[3]))
-})
-
-test_that("ci_cloglog narrows with smaller bootstrap variability", {
-  point <- rep(0.5, 3)
-  ci_wide   <- ci_cloglog(point, make_boot(point, 0.10, seed = 7))
-  ci_narrow <- ci_cloglog(point, make_boot(point, 0.01, seed = 7))
-
-  expect_true(all(ci_narrow$ul - ci_narrow$ll <
-                  ci_wide$ul   - ci_wide$ll))
-})
-
-test_that("ci_cloglog level argument widens the interval", {
-  point <- 0.5
-  boot  <- make_boot(point, 0.05, seed = 11)
-  ci_95 <- ci_cloglog(point, boot, level = 0.95)
-  ci_99 <- ci_cloglog(point, boot, level = 0.99)
-
-  expect_true(ci_99$ul - ci_99$ll > ci_95$ul - ci_95$ll)
-})
-
-test_that("ci_cloglog: doubling bootstrap SE roughly doubles cloglog-scale width", {
-  point  <- 0.3
-  ## Reuse the same standardized noise so the only difference is sd
-  set.seed(123)
-  z      <- stats::rnorm(2000)
-  boot1  <- matrix(point + 0.02 * z, nrow = 1L)
-  boot2  <- matrix(point + 0.04 * z, nrow = 1L)
-
-  ci1 <- ci_cloglog(point, boot1)
-  ci2 <- ci_cloglog(point, boot2)
-
-  g       <- function(p) log(-log(p))
-  width_g <- function(ci) g(ci$ll) - g(ci$ul)  # g is decreasing
-  ratio   <- width_g(ci2) / width_g(ci1)
-  expect_equal(ratio, 2, tolerance = 0.10)
-})
-
-test_that("ci_cloglog: bounds always lie in (0,1) and bracket the point", {
-  set.seed(7)
-  point <- stats::runif(20, 0.05, 0.95)
-  boot  <- make_boot(point, 0.05, B = 500, seed = 17)
-  ci    <- ci_cloglog(point, boot)
-
-  expect_true(all(ci$ll > 0 & ci$ll < point))
-  expect_true(all(ci$ul > point & ci$ul < 1))
-})
-
-test_that("ci_cloglog validates input dimensions", {
-  expect_error(ci_cloglog(c(0.3, 0.5), matrix(0, 3, 100)),
-               "nrow\\(boot\\)")
-  expect_error(ci_cloglog(0.5, c(0.4, 0.5, 0.6)),
-               "matrix")
-})
-
 
 test_that("confidence_band returns NA outside trim range and valid inside", {
   set.seed(1)
@@ -119,18 +103,18 @@ test_that("confidence_band returns NA outside trim range and valid inside", {
   expect_true(all(band$ul.band[ok] >= point[ok] - 1e-8))
 })
 
-test_that("confidence_band is wider than pointwise CI on cloglog scale", {
+test_that("confidence_band is at least as wide as pointwise CI", {
   set.seed(2)
   times <- seq(0.1, 1.0, length.out = 30)
   point <- pmax(0.05, pmin(0.95, sort(stats::runif(30, 0.1, 0.9))))
   boot  <- make_boot(point, 0.05, B = 500, seed = 5)
+  se    <- apply(boot, 1L, stats::sd, na.rm = TRUE)
 
-  ci   <- ci_cloglog(point, boot)
+  ci   <- ci_cloglog(point, se)
   band <- confidence_band(point, boot, times = times,
                           trim = c(0, 1))
 
   ok <- !is.na(band$ll.band) & !is.na(ci$ll)
-  ## Bands are at least as wide as pointwise intervals at every t in range
   expect_true(all(band$ll.band[ok] <= ci$ll[ok] + 1e-8))
   expect_true(all(band$ul.band[ok] >= ci$ul[ok] - 1e-8))
 })

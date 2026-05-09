@@ -50,17 +50,26 @@
 #' }
 #'
 #' @section Standard errors and confidence intervals:
-#' The \code{se} column in \code{curves} is the cluster-bootstrap
-#' standard deviation of \eqn{\hat P(t)} on the \emph{probability}
-#' scale (i.e. \code{apply(boot_matrix, 1, sd)} across replicates).
-#' Pointwise CIs (\code{ll}, \code{ul}) and simultaneous bands
-#' (\code{ll.band}, \code{ul.band}), in contrast, are constructed by
-#' bootstrapping on the cloglog scale \eqn{g(p) = \log(-\log p)} and
-#' back-transforming. Consequently \code{se} and the CI half-width are
-#' \emph{not} equal in general -- the half-width is asymmetric on the
-#' probability scale and varies with \code{P}, while \code{se} is the
-#' raw probability-scale spread of the replicates. Report \code{se}
-#' for descriptive purposes; use \code{ll}/\code{ul} for inference.
+#' The cluster bootstrap is run \emph{once}, on the original
+#' probability scale, in line with Bakoyannis (2021) Theorem 2. The
+#' \code{se} column in \code{curves} is the bootstrap standard
+#' deviation of \eqn{\hat P(t)} on that scale, i.e.
+#' \code{apply(boot_matrix, 1, sd, na.rm = TRUE)}.
+#'
+#' Pointwise CIs (\code{ll}, \code{ul}) are then built on the cloglog
+#' scale \eqn{g(p) = \log(-\log p)} using the delta-method
+#' standardization \eqn{\mathrm{SE}_g(t) = \mathrm{SE}(\hat P(t)) /
+#' |\hat P(t) \log \hat P(t)|}, and back-transformed via
+#' \eqn{p = \exp(-\exp(\cdot))}. Simultaneous bands
+#' (\code{ll.band}, \code{ul.band}) use the same \eqn{\mathrm{SE}_g}
+#' to studentize the cloglog residuals from the bootstrap replicates;
+#' the \code{level}-quantile of the supremum gives the critical value.
+#'
+#' Because the cloglog transformation is nonlinear, \code{se} and the
+#' resulting CI half-width are \emph{not} equal in general -- the
+#' half-width is asymmetric on the probability scale and varies with
+#' \code{P}. Report \code{se} for descriptive purposes; use
+#' \code{ll}/\code{ul} for inference.
 #'
 #' @references
 #' Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous

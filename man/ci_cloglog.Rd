@@ -4,14 +4,14 @@
 \alias{ci_cloglog}
 \title{Pointwise Confidence Intervals via Complementary Log-Log Transformation}
 \usage{
-ci_cloglog(point, boot, level = 0.95)
+ci_cloglog(point, se, level = 0.95)
 }
 \arguments{
 \item{point}{Numeric vector of point estimates in (0, 1), length T.}
 
-\item{boot}{Numeric matrix of bootstrap replicates of \code{point}:
-\code{nrow(boot) == length(point)} (rows index time points,
-columns index replicates), as produced by \code{cluster_boot()}.}
+\item{se}{Numeric vector of bootstrap standard errors of \code{point}
+on the probability scale, same length as \code{point} (i.e.
+\code{apply(boot_matrix, 1, sd, na.rm = TRUE)}).}
 
 \item{level}{Confidence level. Default 0.95.}
 }
@@ -22,24 +22,21 @@ A list with elements \code{ll} and \code{ul}: numeric vectors
 }
 \description{
 Computes pointwise confidence intervals for a transition probability
-estimate by bootstrapping directly on the cloglog scale: each
-bootstrap replicate is transformed by \eqn{g(p) = \log(-\log p)}, the
-standard error is taken as the across-replicate \code{sd} of the
-transformed values, a symmetric interval is built on the cloglog
-scale, and the result is back-transformed to the probability scale.
+estimate using the cloglog transformation \eqn{g(p) = \log(-\log p)}
+with a delta-method standard error scaling. The bootstrap is run
+once, on the original probability scale, in line with Bakoyannis
+(2021) Theorem 2; the cloglog SE is then derived analytically.
 }
 \details{
-Bootstrapping on the cloglog scale avoids the delta-method
-approximation that an earlier implementation used (and which had
-incorrect coverage when the bootstrap SE was passed in already on
-the probability scale). The cloglog transformation is monotone
-\emph{decreasing} on (0, 1), so the upper end of the interval on
-the cloglog scale corresponds to the \emph{lower} end on the
-probability scale, and vice versa.
+By the delta method,
+\eqn{\mathrm{SE}(g(\hat P)) = \mathrm{SE}(\hat P) / |\hat P \log \hat P|}
+(here \eqn{|g'(p)| = 1/|p \log p|} on (0,1)). The interval is built
+symmetrically on the cloglog scale and back-transformed via
+\eqn{p = \exp(-\exp(\cdot))}. Because \eqn{g} is monotone
+decreasing on (0, 1), the upper end on the cloglog scale becomes
+the \emph{lower} end on the probability scale, and vice versa.
 
 For point estimates exactly equal to 0 or 1 the cloglog is
-undefined, and \code{NA} is returned for both limits at those
-positions. Bootstrap replicates outside (0, 1) are masked to
-\code{NA} when computing the cloglog-scale standard error.
+undefined and \code{NA} is returned at those positions.
 }
 \keyword{internal}

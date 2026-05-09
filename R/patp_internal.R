@@ -38,7 +38,7 @@
                              fn = fn_boot, seed = seed)
 
     se <- apply(boot_mat, 1L, stats::sd, na.rm = TRUE)
-    ci <- ci_cloglog(curves$P, boot_mat, level = level)
+    ci <- ci_cloglog(curves$P, se, level = level)
 
     curves$se <- se
     curves$ll <- ci$ll
@@ -143,8 +143,8 @@
   boot_1 <- curves_boot[(ng + 1L):(2L * ng), , drop = FALSE]
   se_0   <- apply(boot_0, 1L, stats::sd, na.rm = TRUE)
   se_1   <- apply(boot_1, 1L, stats::sd, na.rm = TRUE)
-  ci_0   <- ci_cloglog(p0_grid, boot_0, level = level)
-  ci_1   <- ci_cloglog(p1_grid, boot_1, level = level)
+  ci_0   <- ci_cloglog(p0_grid, se_0, level = level)
+  ci_1   <- ci_cloglog(p1_grid, se_1, level = level)
 
   curves <- rbind(
     data.frame(time = grid, P = p0_grid,
