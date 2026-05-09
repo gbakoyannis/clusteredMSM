@@ -9,3 +9,5 @@ Meta/
 inst/doc/
 revdep/
 .DS_Store
+**/.DS_Store
+simulations/results/
