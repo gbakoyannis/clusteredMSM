@@ -86,6 +86,21 @@ simultaneous confidence bands. If a grouping variable is supplied
 on the right-hand side of the formula, also conducts a two-sample
 Kolmogorov-Smirnov-type test of curve equality.
 }
+\section{Standard errors and confidence intervals}{
+
+The \code{se} column in \code{curves} is the cluster-bootstrap
+standard deviation of \eqn{\hat P(t)} on the \emph{probability}
+scale (i.e. \code{apply(boot_matrix, 1, sd)} across replicates).
+Pointwise CIs (\code{ll}, \code{ul}) and simultaneous bands
+(\code{ll.band}, \code{ul.band}), in contrast, are constructed by
+bootstrapping on the cloglog scale \eqn{g(p) = \log(-\log p)} and
+back-transforming. Consequently \code{se} and the CI half-width are
+\emph{not} equal in general -- the half-width is asymmetric on the
+probability scale and varies with \code{P}, while \code{se} is the
+raw probability-scale spread of the replicates. Report \code{se}
+for descriptive purposes; use \code{ll}/\code{ul} for inference.
+}
+
 \examples{
 \dontrun{
 tmat <- trans_mat(list(c(2, 3), c(1, 3), integer(0)),
