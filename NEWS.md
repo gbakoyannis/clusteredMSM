@@ -58,3 +58,14 @@ time, starting state, and ending state. Censoring is encoded as
 `Sstart == Sstop` on the final row. Within each subject, intervals must
 be temporally and spatially contiguous; this is enforced by strict
 validation (`validate_intervals()`).
+
+## Known limitations
+
+* The two-sample Kolmogorov-Smirnov-type test uses **unit weight** at
+  every time point. Bakoyannis (2021) Section 2.5 recommends the
+  harmonic-mean weight `W(t) = prod_p Y_p(t) / sum_p Y_p(t)`, which
+  downweights regions where one group's at-risk set is small and
+  tames tail instability of the difference estimator. A weighted
+  variant following Bakoyannis (2021) Section 2.5 and Bakoyannis &
+  Bandyopadhyay (2022) is planned for v0.2, alongside the linear and
+  L2 tests.

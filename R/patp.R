@@ -95,6 +95,12 @@
 #' \code{patp()} validates the supplied data against the requested
 #' design and stops with an informative error if they disagree.
 #'
+#' The K-S statistic in v0.1 uses unit weight at every time point.
+#' Weighted variants -- following the harmonic-mean weight
+#' \eqn{W(t) = \prod_p Y_p(t) / \sum_p Y_p(t)} of Bakoyannis (2021)
+#' Section 2.5 and the related construction in Bakoyannis & Bandyopadhyay
+#' (2022) -- are planned for v0.2.
+#'
 #' @section Standard errors and confidence intervals:
 #' The cluster bootstrap is run \emph{once}, on the original
 #' probability scale, in line with Bakoyannis (2021) Theorem 2. The

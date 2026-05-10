@@ -383,6 +383,13 @@ paper. Do not change this.
       "no visible binding" notes (not currently needed — `R CMD
       check` is clean with 0 notes; revisit if notes appear)
 - [ ] Implement linear and L2 tests (planned v0.2)
+- [ ] Implement weighted K-S test per Bakoyannis (2021) Section 2.5
+      (v0.2). The current K-S uses unit weight; the recommended
+      default is the harmonic-mean weight
+      `W(t) = prod_p Y_p(t) / sum_p Y_p(t)`, which requires
+      computing the per-group at-risk processes and threading them
+      into `ks_pvalue()` (likely as an optional `weight` argument
+      held fixed across bootstrap replicates).
 - [ ] Add `plot.patp()` S3 method
 - [ ] Decide whether to drop `mstate` from `Suggests` after regression
       test is in place

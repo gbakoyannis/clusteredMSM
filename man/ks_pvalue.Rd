@@ -39,4 +39,14 @@ centered bootstrap differences. The empirical p-value is invariant
 to \code{scale} (it appears on both sides of the comparison); the
 role of \code{scale} is to put the reported statistic on the
 correct asymptotic scale per the relevant theorem.
+
+This v0.1 implementation uses a unit weight: every time point on
+the grid contributes equally to the supremum. Bakoyannis (2021)
+Section 2.5 instead recommends a time-varying weight
+\eqn{W(t) = \prod_p Y_p(t) / \sum_p Y_p(t)} (the harmonic mean of
+the per-group at-risk processes), which downweights regions where
+one group's at-risk set is small and naturally tames tail
+instability of the difference estimator. A weighted variant
+following Bakoyannis (2021) Section 2.5 and Bakoyannis & Bandyopadhyay
+(2022) is planned for v0.2.
 }
