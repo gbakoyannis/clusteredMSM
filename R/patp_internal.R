@@ -34,7 +34,7 @@
       step_interp(pb$time, pb$pstate, grid, init = init)
     }
 
-    boot_mat <- cluster_boot(long, cid = resample_col, B = B,
+    boot_mat <- cluster_boot(long, cluster = resample_col, B = B,
                              fn = fn_boot, seed = seed)
 
     se <- apply(boot_mat, 1L, stats::sd, na.rm = TRUE)
@@ -220,10 +220,10 @@
     strata_vec <- NULL
   }
 
-  diff_boot   <- cluster_boot(long, cid = resample_col, B = B,
+  diff_boot   <- cluster_boot(long, cluster = resample_col, B = B,
                               fn = fn_diff, strata = strata_vec,
                               seed = seed)
-  curves_boot <- cluster_boot(long, cid = resample_col, B = B,
+  curves_boot <- cluster_boot(long, cluster = resample_col, B = B,
                               fn = fn_curves, strata = strata_vec,
                               seed = if (is.null(seed)) NULL else seed + 1L)
 

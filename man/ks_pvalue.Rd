@@ -40,4 +40,3 @@ to \code{scale} (it appears on both sides of the comparison); the
 role of \code{scale} is to put the reported statistic on the
 correct asymptotic scale per the relevant theorem.
 }
-\keyword{internal}

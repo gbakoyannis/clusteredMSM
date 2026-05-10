@@ -46,4 +46,3 @@ cloglog values \eqn{g(\hat P_b(t))} are computed by transforming
 the existing replicates pointwise -- no separate cloglog-scale
 bootstrap is run.
 }
-\keyword{internal}

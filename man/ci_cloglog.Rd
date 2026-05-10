@@ -39,4 +39,3 @@ the \emph{lower} end on the probability scale, and vice versa.
 For point estimates exactly equal to 0 or 1 the cloglog is
 undefined and \code{NA} is returned at those positions.
 }
-\keyword{internal}

@@ -6,7 +6,7 @@
 \usage{
 cluster_boot(
   data,
-  cid,
+  cluster,
   B,
   fn,
   ...,
@@ -17,10 +17,10 @@ cluster_boot(
 }
 \arguments{
 \item{data}{A data frame containing the cluster ID column named by
-\code{cid}. All other columns are passed through unchanged to
+\code{cluster}. All other columns are passed through unchanged to
 \code{fn}.}
 
-\item{cid}{Character. Name of the cluster ID column.}
+\item{cluster}{Character. Name of the cluster ID column.}
 
 \item{B}{Integer. Number of bootstrap replications.}
 
@@ -59,7 +59,7 @@ function that does not assume a particular form for the statistic.
 \details{
 The bootstrap is non-parametric and at the cluster level: in each
 replicate, n clusters are sampled with replacement (where n is the
-number of unique values of \code{data[[cid]]}), and the resulting
+number of unique values of \code{data[[cluster]]}), and the resulting
 cluster-bound rows are stacked into a new data frame.
 
 Resampled clusters are re-IDed (1, 2, ..., n) so that downstream
@@ -86,7 +86,7 @@ data(example_msm)
 # evaluated on a fixed time grid (which is exactly what patp() does
 # under the hood).
 boot <- cluster_boot(
-  data = example_msm, cid = "cluster", B = 50,
+  data = example_msm, cluster = "cluster", B = 50,
   fn   = function(d) mean(d$Tstop),
   seed = 1
 )

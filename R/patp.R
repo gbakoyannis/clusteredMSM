@@ -31,8 +31,9 @@
 #' @param B Integer. Number of bootstrap replications. \code{B = 0}
 #'   skips inference and is permitted only for one-sample formulas.
 #'   Default 1000.
-#' @param cband Logical. If \code{TRUE}, return 95\% simultaneous
-#'   confidence band limits (recommended \code{B >= 1000}).
+#' @param cband Logical. If \code{TRUE}, return simultaneous
+#'   confidence band limits at the level set by \code{level}
+#'   (recommended \code{B >= 1000}).
 #' @param design Character, two-sample only. One of
 #'   \code{"auto"} (default), \code{"shared"},
 #'   \code{"cluster_random"}, \code{"indep_random"}. Selects the
@@ -115,6 +116,12 @@
 #' half-width is asymmetric on the probability scale and varies with
 #' \code{P}. Report \code{se} for descriptive purposes; use
 #' \code{ll}/\code{ul} for inference.
+#'
+#' The simultaneous band is trimmed to the central 90\% of observed
+#' jump times by default to avoid the band fanning out near the
+#' extremes of follow-up; outside that window \code{ll.band} and
+#' \code{ul.band} are \code{NA}. See \code{\link{confidence_band}()}
+#' for the \code{trim} argument.
 #'
 #' @references
 #' Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous

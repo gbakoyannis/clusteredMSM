@@ -28,7 +28,6 @@
 #' For point estimates exactly equal to 0 or 1 the cloglog is
 #' undefined and \code{NA} is returned at those positions.
 #'
-#' @keywords internal
 #' @export
 ci_cloglog <- function(point, se, level = 0.95) {
 
@@ -92,7 +91,6 @@ ci_cloglog <- function(point, se, level = 0.95) {
 #' the existing replicates pointwise -- no separate cloglog-scale
 #' bootstrap is run.
 #'
-#' @keywords internal
 #' @export
 confidence_band <- function(point, boot, times,
                             level = 0.95, trim = c(0.05, 0.95)) {
@@ -179,7 +177,6 @@ confidence_band <- function(point, boot, times,
 #' role of \code{scale} is to put the reported statistic on the
 #' correct asymptotic scale per the relevant theorem.
 #'
-#' @keywords internal
 #' @export
 ks_pvalue <- function(diff_point, diff_boot, scale) {
 
