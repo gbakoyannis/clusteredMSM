@@ -41,14 +41,14 @@
 #' jump times and K is the number of states.
 #'
 #' @examples
-#' \dontrun{
-#' # Illness-death with recovery
+#' data(example_msm)
 #' tmat <- trans_mat(list(c(2, 3), c(1, 3), integer(0)),
 #'                   names = c("Healthy", "Ill", "Dead"))
-#' haz  <- fit_chaz(msd, tmat)
+#'
+#' long <- intervals_to_long(example_msm, tmat)
+#' haz  <- fit_chaz(long, tmat)
 #' P    <- prodint_AJ(haz, tmat, predt = 0, h = 1)
 #' head(P)
-#' }
 #'
 #' @export
 prodint_AJ <- function(haz_df, tmat, predt = 0, h = 1) {

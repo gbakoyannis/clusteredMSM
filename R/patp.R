@@ -129,25 +129,27 @@
 #' \code{design} is \code{"cluster_random"} or \code{"indep_random"}.)
 #'
 #' @examples
-#' \dontrun{
+#' data(example_msm)
 #' tmat <- trans_mat(list(c(2, 3), c(1, 3), integer(0)),
 #'                   names = c("Healthy", "Ill", "Dead"))
 #'
-#' # One-sample
-#' fit <- patp(msm(time0, time1, state0, state1) ~ 1,
-#'             data = mydata, tmat = tmat,
-#'             id = "subj_id", cluster = "site",
+#' # One-sample: P(Ill at t | Healthy at 0). B is small here for speed;
+#' # use B >= 1000 for reported results.
+#' fit <- patp(msm(Tstart, Tstop, Sstart, Sstop) ~ 1,
+#'             data = example_msm, tmat = tmat,
+#'             id = "id", cluster = "cluster",
 #'             h = 1, j = 2, s = 0,
-#'             B = 1000, cband = TRUE)
+#'             B = 50, seed = 1)
 #' fit
 #'
-#' # Two-sample
-#' tt <- patp(msm(time0, time1, state0, state1) ~ treatment,
-#'            data = mydata, tmat = tmat,
-#'            id = "subj_id", cluster = "site",
-#'            h = 1, j = 2, B = 1000)
+#' # Two-sample (estimate + test in one call). Each cluster in
+#' # example_msm carries both treatment levels, so design = "shared".
+#' tt <- patp(msm(Tstart, Tstop, Sstart, Sstop) ~ treatment,
+#'            data = example_msm, tmat = tmat,
+#'            id = "id", cluster = "cluster",
+#'            h = 1, j = 2, B = 50,
+#'            design = "shared", seed = 1)
 #' tt
-#' }
 #'
 #' @seealso \code{\link{msm}}, \code{\link{trans_mat}},
 #'   \code{\link{validate_intervals}}.

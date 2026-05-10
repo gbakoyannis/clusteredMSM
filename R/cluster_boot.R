@@ -53,20 +53,20 @@
 #' bands. Whatever \code{fn} returns is what gets bootstrapped.
 #'
 #' @examples
-#' \dontrun{
-#' # Bootstrap the patp point estimator on a fixed time grid
-#' grid <- seq(0, 5, length.out = 100)
+#' data(example_msm)
+#'
+#' # Cluster-bootstrap a simple summary: the mean of Tstop across
+#' # rows. The user-supplied fn can return any fixed-length numeric
+#' # vector; the typical use case is a transition probability curve
+#' # evaluated on a fixed time grid (which is exactly what patp() does
+#' # under the hood).
 #' boot <- cluster_boot(
-#'   data = msd, cid = "cid", B = 1000,
-#'   fn   = function(d, tmat, h, j, s, grid) {
-#'     P <- patp_point(d, tmat, h, j, s)
-#'     approx(P$time, P$pstate, xout = grid, rule = 2)$y
-#'   },
-#'   tmat = tmat, h = 1, j = 2, s = 0, grid = grid,
-#'   seed = 1234
+#'   data = example_msm, cid = "cluster", B = 50,
+#'   fn   = function(d) mean(d$Tstop),
+#'   seed = 1
 #' )
-#' se <- apply(boot, 1, sd)
-#' }
+#' c(point = mean(boot, na.rm = TRUE),
+#'   se    = stats::sd(boot, na.rm = TRUE))
 #'
 #' @export
 cluster_boot <- function(data, cid, B, fn, ...,

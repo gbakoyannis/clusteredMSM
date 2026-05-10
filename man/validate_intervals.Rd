@@ -43,4 +43,11 @@ Validation rules, applied in order:
     final row of a subject's record.
 }
 }
+\examples{
+data(example_msm)
+tmat <- trans_mat(list(c(2, 3), c(1, 3), integer(0)),
+                  names = c("Healthy", "Ill", "Dead"))
+validate_intervals(example_msm, tmat)
+
+}
 \keyword{internal}

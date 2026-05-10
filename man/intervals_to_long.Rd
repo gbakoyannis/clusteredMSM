@@ -2,27 +2,46 @@
 % Please edit documentation in R/validate_intervals.R
 \name{intervals_to_long}
 \alias{intervals_to_long}
-\title{Convert Validated Interval Data to the Internal Long Format}
+\title{Convert Validated Interval Data to Long Multistate Format}
 \usage{
 intervals_to_long(data, tmat)
 }
 \arguments{
-\item{data}{A validated interval data frame (output of
-\code{\link{parse_msm_formula}()}).}
+\item{data}{A validated interval data frame with columns \code{id},
+\code{Tstart}, \code{Tstop}, \code{Sstart}, \code{Sstop}, plus
+optional \code{cluster} and \code{group} columns. Run
+\code{\link{validate_intervals}()} first to confirm the data
+satisfy the package's contiguity and absorbing-state rules.}
 
-\item{tmat}{A K x K transition matrix.}
+\item{tmat}{A K x K transition matrix from \code{\link{trans_mat}()}.}
 }
 \value{
 A data frame in long multistate format with columns
   \code{id}, \code{Tstart}, \code{Tstop}, \code{from}, \code{to},
   \code{trans}, \code{status}, plus \code{cluster} and \code{group}
-  if present.
+  if present in \code{data}.
 }
 \description{
-Internal helper. After \code{\link{validate_intervals}()} has
-confirmed a dataset is well-formed, this function expands each
-interval row into one row per allowed transition out of the
-interval's state, with \code{status = 1} only on the row whose
-destination matches the actual transition.
+Expands each row of an interval-format multistate dataset into one
+row per allowed transition out of the interval's starting state,
+with \code{status = 1} on the row whose destination matches the
+actual transition (and \code{0} on the others). The result is the
+long format expected by \code{\link{fit_chaz}} and other
+counting-process style routines.
 }
-\keyword{internal}
+\details{
+Most users do not need to call this function directly --
+\code{\link{patp}()} runs the full pipeline (parse, validate,
+expand, fit). It is exported so advanced users can compose the
+lower-level building blocks (\code{\link{fit_chaz}},
+\code{\link{prodint_AJ}}, \code{\link{cluster_boot}}) into custom
+analyses.
+}
+\examples{
+data(example_msm)
+tmat <- trans_mat(list(c(2, 3), c(1, 3), integer(0)),
+                  names = c("Healthy", "Ill", "Dead"))
+long <- intervals_to_long(example_msm, tmat)
+head(long)
+
+}
