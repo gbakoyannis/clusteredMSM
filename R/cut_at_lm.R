@@ -3,18 +3,18 @@
 #' Restricts a long-format multistate dataset to follow-up after a
 #' landmark time \code{s}. Intervals ending before \code{s} are removed;
 #' intervals straddling \code{s} are truncated to start at \code{s}.
-#' Drop-in replacement for \code{mstate::cutLMms()}.
 #'
-#' @param data A data frame in long format with columns \code{Tstart},
-#'   \code{Tstop}, and \code{status}. Typically the output of
-#'   \code{ms_prep()} or \code{mstate::msprep()}.
+#' 
+#' @param data A long-format data frame, typically produced by
+#'   intervals_to_long(), with columns Tstart, Tstop, from, to,
+#'   trans, status, id, and (optionally) cluster.
 #' @param s Numeric scalar. The landmark time.
 #'
 #' @return A data frame of the same shape as \code{data}, restricted and
 #'   truncated as described above.
 #'
 #' @details
-#' This function is used in landmark Aalen-Johansen estimation, which
+#' This function is used in the landmark Aalen-Johansen estimator, which
 #' relaxes the Markov assumption by re-fitting hazards on the cohort
 #' still under observation at time \code{s}.
 #'
@@ -29,6 +29,16 @@
 #' (\code{Tstart < s < Tstop}) have their \code{Tstart} reset to \code{s}.
 #' If a straddling interval was going to end in an event
 #' (\code{status == 1}) at \code{Tstop > s}, the event is preserved.
+#'
+#' @references
+#' Putter H, Spitoni C (2018). Non-parametric estimation of transition
+#' probabilities in non-Markov multi-state models: the landmark
+#' Aalen-Johansen estimator. \emph{Statistical Methods in Medical
+#' Research} 27(7):2081-2092. \doi{10.1177/0962280216674497}
+#'
+#' Bakoyannis G (2021). Nonparametric analysis of nonhomogeneous
+#' multistate processes with clustered observations.
+#' \emph{Biometrics} 77(2):533-546. \doi{10.1111/biom.13327}
 #'
 #' @examples
 #' \dontrun{

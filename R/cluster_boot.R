@@ -2,8 +2,7 @@
 #'
 #' Performs the nonparametric cluster bootstrap: resamples whole clusters
 #' with replacement and applies a user-supplied statistic function to
-#' each bootstrap replicate. Replaces \code{mstate::msboot()} with a
-#' function that does not assume a particular form for the statistic.
+#' each bootstrap replicate.
 #'
 #' @param data A data frame containing the cluster ID column named by
 #'   \code{cluster}. All other columns are passed through unchanged to
@@ -32,7 +31,7 @@
 #'   to bootstrap replicate \code{b}.
 #'
 #' @details
-#' The bootstrap is non-parametric and at the cluster level: in each
+#' The bootstrap is nonparametric and at the cluster level: in each
 #' replicate, n clusters are sampled with replacement (where n is the
 #' number of unique values of \code{data[[cluster]]}), and the resulting
 #' cluster-bound rows are stacked into a new data frame.
