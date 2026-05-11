@@ -2,7 +2,7 @@
 % Please edit documentation in R/validate_intervals.R
 \name{validate_intervals}
 \alias{validate_intervals}
-\title{Strictly Validate User-Supplied Interval Data}
+\title{Strictly Validate Multistate Data in Interval Format}
 \usage{
 validate_intervals(data, tmat, tol = 1e-09)
 }
@@ -20,8 +20,8 @@ Invisibly returns \code{TRUE} if all checks pass. Stops with
   an error otherwise.
 }
 \description{
-Performs strict validation on a data frame of multistate interval
-data (the output of \code{\link{parse_msm_formula}()}). Stops with
+Performs strict validation on a data frame of multistate data in interval
+format (the output of \code{\link{parse_msm_formula}()}). Stops with
 an informative error on the first violation.
 }
 \details{

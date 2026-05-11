@@ -23,9 +23,8 @@ A list with elements \code{ll} and \code{ul}: numeric vectors
 \description{
 Computes pointwise confidence intervals for a transition probability
 estimate using the cloglog transformation \eqn{g(p) = \log(-\log p)}
-with a delta-method standard error scaling. The bootstrap is run
-once, on the original probability scale, in line with Bakoyannis
-(2021) Theorem 2; the cloglog SE is then derived analytically.
+with a delta-method standard error scaling. The bootstrap is run on the 
+original probability scale; the cloglog SE is then derived analytically.
 }
 \details{
 By the delta method,

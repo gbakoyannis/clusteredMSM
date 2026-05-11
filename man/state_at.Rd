@@ -9,8 +9,7 @@ state_at(data, s, id = "id")
 \arguments{
 \item{data}{A data frame in long format with columns \code{Tstart},
 \code{Tstop}, \code{from}, \code{to}, \code{status}, and the subject
-ID column named by \code{id}. Typically the output of \code{ms_prep()}
-or \code{mstate::msprep()}.}
+ID column named by \code{id}.}
 
 \item{s}{Numeric scalar. The time at which to evaluate states.}
 
@@ -25,9 +24,8 @@ A data frame with columns \code{<id>} and \code{state}, one row
 }
 \description{
 Given a long-format multistate dataset, returns the state each subject
-occupies at time \code{s}. Drop-in replacement for \code{mstate::xsect()}.
-Used by the landmark Aalen-Johansen estimator to identify the risk set
-at a conditioning time.
+occupies at time \code{s}. Used by the landmark Aalen-Johansen estimator
+to identify the risk set at a conditioning time.
 }
 \details{
 A subject's state at time \code{s} is the \code{from} state of the
@@ -45,4 +43,10 @@ exists, otherwise they are excluded as absorbed/censored.
 state_at(msd, s = 1.5, id = "id")
 }
 
+}
+\references{
+Putter H, Spitoni C (2018). Non-parametric estimation of transition
+probabilities in non-Markov multi-state models: the landmark
+Aalen-Johansen estimator. \emph{Statistical Methods in Medical
+Research} 27(7):2081-2092. \doi{10.1177/0962280216674497}
 }

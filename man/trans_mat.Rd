@@ -23,8 +23,7 @@ A K x K integer matrix. Entry \code{[h, j]} is the integer
 }
 \description{
 Constructs a square transition matrix in the format expected by
-\code{\link{patp}} and \code{\link{prodint_AJ}}. Drop-in replacement for
-\code{mstate::transMat()} that supports cyclic transitions
+\code{\link{patp}} and \code{\link{prodint_AJ}}. It supports cyclic transitions
 (e.g., illness-death with recovery).
 }
 \examples{
@@ -36,7 +35,7 @@ trans_mat(list(c(2, 3), 3, integer(0)),
 trans_mat(list(c(2, 3), c(1, 3), integer(0)),
           names = c("Healthy", "Ill", "Dead"))
 
-# Four-state competing risks with recovery from two intermediate states
+# Four-state multistate model with recovery from two intermediate states
 trans_mat(list(c(2, 3, 4), c(1, 4), c(1, 4), integer(0)))
 
 }

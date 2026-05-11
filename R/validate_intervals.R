@@ -1,7 +1,7 @@
-#' Strictly Validate User-Supplied Interval Data
+#' Strictly Validate Multistate Data in Interval Format
 #'
-#' Performs strict validation on a data frame of multistate interval
-#' data (the output of \code{\link{parse_msm_formula}()}). Stops with
+#' Performs strict validation on a data frame of multistate data in interval
+#' format (the output of \code{\link{parse_msm_formula}()}). Stops with
 #' an informative error on the first violation.
 #'
 #' @param data A data frame with columns \code{id}, \code{Tstart},

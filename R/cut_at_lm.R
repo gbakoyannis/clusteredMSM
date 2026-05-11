@@ -4,10 +4,10 @@
 #' landmark time \code{s}. Intervals ending before \code{s} are removed;
 #' intervals straddling \code{s} are truncated to start at \code{s}.
 #'
-#' 
 #' @param data A long-format data frame, typically produced by
-#'   intervals_to_long(), with columns Tstart, Tstop, from, to,
-#'   trans, status, id, and (optionally) cluster.
+#'   \code{\link{intervals_to_long}()}, with columns \code{Tstart},
+#'   \code{Tstop}, \code{from}, \code{to}, \code{trans}, \code{status},
+#'   \code{id}, and (optionally) \code{cluster}.
 #' @param s Numeric scalar. The landmark time.
 #'
 #' @return A data frame of the same shape as \code{data}, restricted and

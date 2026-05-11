@@ -9,7 +9,7 @@ fit_chaz(data, tmat, weights = NULL)
 \arguments{
 \item{data}{A data frame in long multistate format with columns
 \code{Tstart}, \code{Tstop}, \code{status}, and \code{trans}.
-Typically the output of \code{ms_prep()} or \code{mstate::msprep()}.}
+Typically the output of \code{\link{intervals_to_long}()}.}
 
 \item{tmat}{A K x K transition matrix from \code{trans_mat()}. Used
 only to validate that all transition IDs in \code{data} are defined
@@ -28,16 +28,12 @@ A data frame with columns:
     hazard at \code{time}.
   \item \code{trans}: integer transition ID (matches \code{tmat}).
 }
-Sorted by \code{trans} then \code{time}. Format is identical to the
-\code{$Haz} element of an \code{mstate::msfit} object, so it can be
-passed directly to \code{prodint_AJ()}.
+Sorted by \code{trans} then \code{time}.
 }
 \description{
 Fits a Cox proportional hazards model stratified by transition type and
 returns the Breslow-estimated cumulative transition hazards in long
-format. Replaces the combination of \code{mstate::msfit()} and the
-\code{coxph() + basehaz()} sequence used in the original
-\code{clustered-multistate} code.
+format.
 }
 \details{
 The model fitted is
@@ -47,10 +43,6 @@ This is the Andersen-Gill counting-process formulation, which handles
 multiple intervals per subject -- including non-monotone processes
 with recovery -- provided the input data was correctly constructed
 (one row per sojourn x candidate transition).
-
-The Breslow tie-breaking method is used to match the convention of
-\code{mstate::msfit()} and ensure backward compatibility with the
-original implementation.
 }
 \examples{
 data(example_msm)

@@ -2,10 +2,8 @@
 #'
 #' Computes the row of the transition probability matrix
 #' \deqn{P(s, t) = \prod_{u \in (s, t]} (I + dA(u))}
-#' starting from state \code{h}, given Nelson-Aalen / Breslow cumulative
-#' transition hazards. Drop-in replacement for \code{mstate::probtrans()}
-#' that supports general (possibly non-monotone) transition structures
-#' such as illness-death with recovery.
+#' starting from state \code{h}, given Nelson-Aalen
+#' transition hazard estimates.
 #'
 #' @param haz_df Data frame with columns \code{time}, \code{Haz},
 #'   \code{trans}, typically the output of \code{fit_chaz()} or the
@@ -30,12 +28,6 @@
 #' \eqn{h \to j}, and diagonal entries equal to the negative row sums.
 #' The transition probability matrix is then updated by
 #' \eqn{P \leftarrow P (I + dA(u))}.
-#'
-#' Unlike \code{mstate::probtrans()}, which uses a forward recursion
-#' that exploits acyclicity, this implementation works for any
-#' transition structure including processes with cycles. For progressive
-#' (acyclic) models, output matches \code{probtrans()} to numerical
-#' precision.
 #'
 #' Computational complexity is O(J K^2) where J is the number of unique
 #' jump times and K is the number of states.

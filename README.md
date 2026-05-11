@@ -1,3 +1,9 @@
+---
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
 # clusteredMSM
 
 Nonparametric analysis of clustered multistate process data.
@@ -16,19 +22,19 @@ variance.
 Unlike its predecessor (the `clustered-multistate` repository, which
 relied on the `mstate` package), `clusteredMSM` is self-contained
 (depending only on `survival`) and supports **non-monotone multistate
-processes**, including illness-death with recovery and other models
-with cyclic transitions.
+processes**, including illness-death with recovery and other models with
+cyclic transitions.
 
 ## Installation
 
-```r
+``` r
 # install.packages("devtools")
 devtools::install_github("gbakoyannis/clusteredMSM")
 ```
 
 After CRAN release:
 
-```r
+``` r
 install.packages("clusteredMSM")
 ```
 
@@ -37,7 +43,7 @@ install.packages("clusteredMSM")
 `clusteredMSM` exposes one main function, `patp()`, modelled after
 `survival::Surv()`:
 
-```r
+``` r
 library(clusteredMSM)
 
 # Synthetic clustered illness-death-with-recovery data (40 subjects,
@@ -61,7 +67,7 @@ If the formula's right-hand side has a grouping variable, `patp()`
 automatically estimates both group-specific curves AND tests their
 equality:
 
-```r
+``` r
 # Two-sample analysis (estimate + test in one call)
 tt <- patp(msm(Tstart, Tstop, Sstart, Sstop) ~ treatment,
            data = example_msm, tmat = tmat,
@@ -75,7 +81,7 @@ tt
 The same example is shipped as a CSV under `inst/extdata/`, so you can
 mimic the typical workflow of reading a user-supplied file:
 
-```r
+``` r
 f <- system.file("extdata", "example_data.csv", package = "clusteredMSM")
 mydata <- read.csv(f)
 head(mydata)
@@ -86,15 +92,15 @@ head(mydata)
 Each row of your data represents one **mutually-exclusive time
 interval** for one subject, with columns:
 
-| Column     | Description                                           |
-|------------|-------------------------------------------------------|
-| `Tstart`   | Numeric start time of the interval                    |
-| `Tstop`    | Numeric end time of the interval                      |
-| `Sstart`   | Integer state occupied during the interval            |
-| `Sstop`    | Integer state at `Tstop` (or equal to `Sstart` if censored) |
-| `id`       | Subject identifier                                    |
-| `cluster`  | (optional) cluster identifier                         |
-| (group)    | (optional) binary grouping variable                   |
+| Column    | Description                                                 |
+|-----------|-------------------------------------------------------------|
+| `Tstart`  | Numeric start time of the interval                          |
+| `Tstop`   | Numeric end time of the interval                            |
+| `Sstart`  | Integer state occupied during the interval                  |
+| `Sstop`   | Integer state at `Tstop` (or equal to `Sstart` if censored) |
+| `id`      | Subject identifier                                          |
+| `cluster` | (optional) cluster identifier                               |
+| (group)   | (optional) binary grouping variable                         |
 
 The column names are arbitrary — `msm(...)` and the `id`/`cluster`
 arguments tell the package which is which.
@@ -102,9 +108,9 @@ arguments tell the package which is which.
 **Censoring** is encoded as `Sstart == Sstop` on the **final row** of a
 subject's record. Subjects in absorbing states have no row after them.
 
-Within each subject, intervals must be:
-- **Temporally contiguous:** `Tstop[k] == Tstart[k+1]`
-- **Spatially contiguous:** `Sstop[k] == Sstart[k+1]`
+Within each subject, intervals must be: - **Temporally contiguous:**
+`Tstop[k] == Tstart[k+1]` - **State contiguous:**
+`Sstop[k] == Sstart[k+1]`
 
 Validation is strict and informative — any violation triggers an error
 with a clear message.
@@ -113,29 +119,29 @@ with a clear message.
 
 **Progressive illness-death (subject who got ill, then died):**
 
-| id | Tstart | Tstop | Sstart | Sstop |
-|----|--------|-------|--------|-------|
-| 1  | 0.0    | 1.5   | 1      | 2     |
-| 1  | 1.5    | 3.0   | 2      | 3     |
+| id  | Tstart | Tstop | Sstart | Sstop |
+|-----|--------|-------|--------|-------|
+| 1   | 0.0    | 1.5   | 1      | 2     |
+| 1   | 1.5    | 3.0   | 2      | 3     |
 
 **Subject censored healthy:**
 
-| id | Tstart | Tstop | Sstart | Sstop |
-|----|--------|-------|--------|-------|
-| 2  | 0.0    | 4.0   | 1      | 1     |
+| id  | Tstart | Tstop | Sstart | Sstop |
+|-----|--------|-------|--------|-------|
+| 2   | 0.0    | 4.0   | 1      | 1     |
 
 **Recovery (Healthy → Ill → Healthy → censored):**
 
-| id | Tstart | Tstop | Sstart | Sstop |
-|----|--------|-------|--------|-------|
-| 3  | 0.0    | 1.0   | 1      | 2     |
-| 3  | 1.0    | 2.0   | 2      | 1     |
-| 3  | 2.0    | 3.5   | 1      | 1     |
+| id  | Tstart | Tstop | Sstart | Sstop |
+|-----|--------|-------|--------|-------|
+| 3   | 0.0    | 1.0   | 1      | 2     |
+| 3   | 1.0    | 2.0   | 2      | 1     |
+| 3   | 2.0    | 3.5   | 1      | 1     |
 
 ## Core functions
 
 | Function | Purpose |
-|---|---|
+|----|----|
 | `patp()` | The main user-facing function — formula-based estimation and testing. |
 | `msm()` | Constructor for multistate intervals; used inside the formula. |
 | `trans_mat()` | Build a K x K transition matrix. |
@@ -147,13 +153,13 @@ If you use `clusteredMSM` in your work, please cite the methodological
 papers:
 
 > Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous
-> multistate processes with clustered observations. *Biometrics*,
-> 77(2), 533-546. doi:10.1111/biom.13327
+> multistate processes with clustered observations. *Biometrics*, 77(2),
+> 533-546. <doi:10.1111/biom.13327>
 
 > Bakoyannis, G., & Bandyopadhyay, D. (2022). Nonparametric tests for
-> multistate processes with clustered data. *Annals of the Institute
-> of Statistical Mathematics*, 74(5), 837-867.
-> doi:10.1007/s10463-021-00819-x
+> multistate processes with clustered data. *Annals of the Institute of
+> Statistical Mathematics*, 74(5), 837-867.
+> <doi:10.1007/s10463-021-00819-x>
 
 You can retrieve the BibTeX entries within R via
 `citation("clusteredMSM")`.

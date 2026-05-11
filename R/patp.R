@@ -1,7 +1,7 @@
-#' Population-Averaged Transition Probabilities for Multistate Data
+#' Population-Averaged Transition Probabilities for Multistate Process Data
 #'
-#' Estimates the working-independence Aalen-Johansen transition
-#' probability \eqn{P(X(t) = j \mid X(s) = h)} for clustered or
+#' Computes the working-independence Aalen-Johansen estimator of the
+#' transition probability \eqn{P(X(t) = j \mid X(s) = h)} for clustered or
 #' independent multistate process data, with cluster-bootstrap
 #' standard errors, pointwise confidence intervals, and (optionally)
 #' simultaneous confidence bands. If a grouping variable is supplied
@@ -23,11 +23,12 @@
 #' @param h Integer in 1..K. Starting state.
 #' @param j Integer in 1..K. Ending state.
 #' @param s Numeric scalar. Conditioning time. Default 0.
-#' @param weighted Logical. Inverse-cluster-size weighting (requires
-#'   \code{cluster}). Default \code{FALSE}.
+#' @param weighted Logical. Inverse-cluster-size weighting to account for 
+#'  potentially informative cluster size (requires \code{cluster}). 
+#'  Default \code{FALSE}.
 #' @param LMAJ Logical. Use the landmark Aalen-Johansen estimator
 #'   (recommended when \code{s > 0} and the Markov assumption is
-#'   implausible). Default \code{FALSE}.
+#'   questionable). Default \code{FALSE}.
 #' @param B Integer. Number of bootstrap replications. \code{B = 0}
 #'   skips inference and is permitted only for one-sample formulas.
 #'   Default 1000.
@@ -41,9 +42,9 @@
 #'   \code{"auto"} infers the regime from the cluster/group
 #'   structure of the data, defaulting to \code{"indep_random"} when
 #'   each cluster carries a single group (a safer default than
-#'   assuming randomization). When that fallback fires, a warning
+#'   assuming cluster randomization). When that fallback fires, a warning
 #'   is emitted asking the user to set \code{"cluster_random"}
-#'   explicitly if the per-group cluster counts were fixed by
+#'   explicitly if the per-group cluster counts were fixed by cluster
 #'   randomization.
 #' @param level Confidence level. Default 0.95.
 #' @param seed Optional integer for reproducible bootstrap.
@@ -113,15 +114,13 @@
 #' standardization \eqn{\mathrm{SE}_g(t) = \mathrm{SE}(\hat P(t)) /
 #' |\hat P(t) \log \hat P(t)|}, and back-transformed via
 #' \eqn{p = \exp(-\exp(\cdot))}. Simultaneous bands
-#' (\code{ll.band}, \code{ul.band}) use the same \eqn{\mathrm{SE}_g}
-#' to studentize the cloglog residuals from the bootstrap replicates;
+#' (\code{ll.band}, \code{ul.band}) use the same \eqn{\mathrm{SE}_g};
 #' the \code{level}-quantile of the supremum gives the critical value.
 #'
 #' Because the cloglog transformation is nonlinear, \code{se} and the
-#' resulting CI half-width are \emph{not} equal in general -- the
-#' half-width is asymmetric on the probability scale and varies with
-#' \code{P}. Report \code{se} for descriptive purposes; use
-#' \code{ll}/\code{ul} for inference.
+#' resulting CI widths are \emph{not} equal in general -- the
+#' CI is asymmetric on the probability scale. Report \code{se} for
+#' descriptive purposes; use \code{ll}/\code{ul} for inference.
 #'
 #' The simultaneous band is trimmed to the central 90\% of observed
 #' jump times by default to avoid the band fanning out near the
@@ -137,9 +136,12 @@
 #' Bakoyannis, G., & Bandyopadhyay, D. (2022). Nonparametric tests
 #' for multistate processes with clustered data. \emph{Annals of the
 #' Institute of Statistical Mathematics}, 74(5), 837-867.
-#' \doi{10.1007/s10463-021-00819-x} (Source of the
-#' \eqn{\sqrt{n_1 n_2 / (n_1 + n_2)}} scaling used when
-#' \code{design} is \code{"cluster_random"} or \code{"indep_random"}.)
+#' \doi{10.1007/s10463-021-00819-x}
+#' 
+#' Putter H, Spitoni C (2018). Non-parametric estimation of transition
+#' probabilities in non-Markov multi-state models: the landmark
+#' Aalen-Johansen estimator. \emph{Statistical Methods in Medical
+#' Research} 27(7):2081-2092. \doi{10.1177/0962280216674497}
 #'
 #' @examples
 #' data(example_msm)

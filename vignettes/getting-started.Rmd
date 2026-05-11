@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 ## Overview
 
 `clusteredMSM` provides nonparametric analysis of clustered multistate
-process data, based on Bakoyannis (2021). It exposes one user-facing
+process data, based on Bakoyannis (2021) and Bakoyannis & Bandyopadhyay (2022). It exposes one user-facing
 function, `patp()`, that:
 
 * Estimates the population-averaged transition probability
@@ -32,8 +32,7 @@ function, `patp()`, that:
 * Supports a landmark variant for non-Markov processes.
 * Natively handles non-monotone (recovery) multistate models.
 
-The package depends only on `survival`. It is self-contained and does
-not require the `mstate` package.
+The package depends only on `survival`.
 
 ## Input data format
 
@@ -45,7 +44,7 @@ interval start time (`Tstart`), end time (`Tstop`), starting state
 
 Censoring is encoded as `Sstart == Sstop` on the **final row** of a
 subject's record. Within each subject, intervals must be temporally
-contiguous (`Tstop[k] == Tstart[k+1]`) and spatially contiguous
+contiguous (`Tstop[k] == Tstart[k+1]`) and state contiguous
 (`Sstop[k] == Sstart[k+1]`).
 
 ## A progressive illness-death example
@@ -95,8 +94,12 @@ fit <- patp(
 fit
 ```
 
-`fit$curves` contains the time-indexed point estimate, standard error,
-pointwise confidence interval, and (with `cband = TRUE`) simultaneous
+`fit$curves` contains the time-indexed point estimate of 
+\begin{eqnarray*}
+P(X(t) = j \,|\, X(s) = h) &=& P(X(t) = 2 \,|\, X(0) = 1) \\
+&=& P(X(t) = 2),
+\end{eqnarray*}
+(second equality due to the fact that all start at state = 1 in the classical illness-death model), standard error, pointwise confidence interval, and (with `cband = TRUE`) simultaneous
 band limits.
 
 ## Two-sample comparison (estimation + test in one call)
@@ -152,7 +155,7 @@ patp(msm(t0, t1, s0, s1) ~ 1,
 
 ## Landmark variant
 
-When `s > 0` and the Markov assumption is implausible, use
+When `s > 0` and the Markov assumption is questionable, use
 `LMAJ = TRUE`:
 
 ```{r lmaj, eval = FALSE}
@@ -165,8 +168,7 @@ patp(msm(t0, t1, s0, s1) ~ 1,
 
 ## Inverse-cluster-size weighting
 
-When cluster size is potentially informative (e.g., sicker centers
-contribute more patients), use the weighted estimator:
+When cluster size is potentially informative (e.g., larger hospitals contribute sicker centers), use the weighted estimator:
 
 ```{r weighted, eval = FALSE}
 patp(msm(t0, t1, s0, s1) ~ 1,
@@ -184,10 +186,23 @@ Setting `B = 0` returns the point estimate without any bootstrap
 inference. This is permitted only for one-sample formulas; two-sample
 formulas always require `B > 0` (since the entire point of a
 two-sample analysis is the test). Use `B = 0` for fast exploratory
-work, then switch to `B = 1000` for publication-quality inference.
+work, then switch to `B = 1000` for inference.
 
 ## References
 
-Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous
-multistate processes with clustered observations. *Biometrics*,
-77(2), 533-546. doi:10.1111/biom.13327
+Bakoyannis G (2021). Nonparametric analysis of nonhomogeneous
+multistate processes with clustered observations. *Biometrics*
+77(2):533-546. [doi:10.1111/biom.13327](https://doi.org/10.1111/biom.13327)
+
+Bakoyannis G, Bandyopadhyay D (2022). Nonparametric tests for
+multistate processes with clustered data. *Annals of the Institute
+of Statistical Mathematics* 74(5):837-867.
+[doi:10.1007/s10463-021-00819-x](https://doi.org/10.1007/s10463-021-00819-x)
+
+Putter H, Spitoni C (2018). Non-parametric estimation of transition
+probabilities in non-Markov multi-state models: the landmark
+Aalen-Johansen estimator. *Statistical Methods in Medical Research*
+27(7):2081-2092.
+[doi:10.1177/0962280216674497](https://doi.org/10.1177/0962280216674497)
+
+

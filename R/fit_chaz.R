@@ -6,7 +6,7 @@
 #'
 #' @param data A data frame in long multistate format with columns
 #'   \code{Tstart}, \code{Tstop}, \code{status}, and \code{trans}.
-#'   Typically the output of \code{ms_prep()}.
+#'   Typically the output of \code{\link{intervals_to_long}()}.
 #' @param tmat A K x K transition matrix from \code{trans_mat()}. Used
 #'   only to validate that all transition IDs in \code{data} are defined
 #'   in \code{tmat}; not used in the fit itself.
