@@ -168,7 +168,7 @@ patp(msm(t0, t1, s0, s1) ~ 1,
 
 ## Inverse-cluster-size weighting
 
-When cluster size is potentially informative (e.g., larger hospitals contribute sicker centers), use the weighted estimator:
+When cluster size is potentially informative (e.g., sicker centers contribute more patients), use the weighted estimator:
 
 ```{r weighted, eval = FALSE}
 patp(msm(t0, t1, s0, s1) ~ 1,

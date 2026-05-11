@@ -34,7 +34,7 @@
 #' 
 #' @examples
 #' \dontrun{
-#' # After running ms_prep on illness-death data:
+#' # After running intervals_to_long on illness-death data:
 #' state_at(msd, s = 1.5, id = "id")
 #' }
 #'
