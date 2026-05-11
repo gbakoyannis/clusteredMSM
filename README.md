@@ -143,9 +143,6 @@ with a clear message.
 
 ## Citation
 
-If you use `clusteredMSM` in your work, please cite the methodological
-papers:
-
 > Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous
 > multistate processes with clustered observations. *Biometrics*, 77(2),
 > 533-546. <doi:10.1111/biom.13327>
