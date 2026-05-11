@@ -1,9 +1,3 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 # clusteredMSM
 
 Nonparametric analysis of clustered multistate process data.
