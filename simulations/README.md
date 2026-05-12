@@ -46,10 +46,6 @@ Three calibration properties of the inference machinery, each with
 Single cell: `n_clusters = 40`, cluster size `~ U{5, 15}`, right
 censoring only, no left truncation.
 
-## Expected runtime
-
-30-60 minutes on a modern laptop, single-threaded.
-
 ## What "passing" means
 
 A check passes if the empirical rate is within 2 binomial standard
