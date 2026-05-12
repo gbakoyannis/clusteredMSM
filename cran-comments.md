@@ -40,11 +40,13 @@ data-generating settings.
 | K-S Type I error (cluster-randomized)  | 0.05   | 0.050     |
 | K-S Type I error (independent obs.)    | 0.05   | 0.044     |
 
-At tau_0.4 the average bootstrap SE (0.0218) closely matched the
-Monte Carlo standard deviation (0.0215), indicating that the bootstrap
-variance estimator accurately captures the empirical sampling
-variability. All five coverage/error rates are within Monte Carlo
-sampling variability of their nominal levels.
+At tau_0.4 the empirical bias was -0.0050, and the average bootstrap
+SE (0.0218) closely matched the Monte Carlo standard deviation
+(0.0215), indicating that the point estimator is approximately
+unbiased and that the bootstrap variance estimator accurately
+captures the empirical sampling variability. All five coverage/error
+rates are within Monte Carlo sampling variability of their nominal
+levels.
 
 ## Reverse dependencies
 
