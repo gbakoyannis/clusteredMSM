@@ -141,7 +141,7 @@ with a clear message.
 | `trans_mat()` | Build a K x K transition matrix. |
 | `validate_intervals()` | Validate user data (called automatically by `patp()`; usable directly). |
 
-## Citation
+## References
 
 > Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous
 > multistate processes with clustered observations. *Biometrics*, 77(2),
