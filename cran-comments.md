@@ -9,7 +9,18 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors | 0 warnings | 1 note
+
+The NOTE is from `devtools::check_win_devel()` and has two parts, both
+expected:
+
+* "New submission" -- this is the first CRAN submission of the package.
+* "Possibly misspelled words in DESCRIPTION": Aalen, Bakoyannis,
+  Bandyopadhyay, Johansen, Multistate, multistate. The first four are
+  author surnames (Aalen-Johansen estimator; Bakoyannis 2021;
+  Bakoyannis & Bandyopadhyay 2022); "multistate" is the standard
+  technical term in the survival-analysis literature. All spellings
+  are intentional.
 
 ## This is a new release
 
