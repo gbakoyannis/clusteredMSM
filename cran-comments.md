@@ -26,7 +26,8 @@ non-monotone (recovery) multistate processes.
 The cluster-bootstrap inference machinery was validated by Monte Carlo
 simulation following the data-generating mechanism of Bakoyannis (2021)
 Section 3: 500 replications, n = 40 clusters, cluster size U{5, 15},
-illness-death process with recovery, right-censored, B = 500 cluster
+progressive illness-death process (no recovery), right-censored,
+B = 500 cluster
 bootstrap replicates per replication. The pointwise estimand is the
 all-cause-mortality transition probability evaluated at tau_0.4, the
 40th percentile of the follow-up-time distribution under the
