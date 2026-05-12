@@ -153,7 +153,7 @@ with a clear message.
 > <doi:10.1007/s10463-021-00819-x>
 
 You can retrieve the BibTeX entries within R via
-`citation("clusteredMSM")`.
+`toBibtex(citation("clusteredMSM"))`.
 
 ## License
 
