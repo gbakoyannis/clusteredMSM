@@ -89,15 +89,19 @@ The full Bakoyannis (2021) simulation study covers:
 - 2 censoring scenarios (right-cens only, right-cens + left-trunc)
 - Both H_0 and H_1 for the two-sample test
 
-Full reproduction is ~8-12 hours of compute time. The simulator
-function `simulate_clusters()` supports all combinations via its
-arguments (`cluster_size_range`, `two_sample`, `under_alternative`,
-`left_truncate`). Stage 2 expansion involves writing a runner that
-sweeps over the parameter grid; the simulator infrastructure here
-is reusable.
+The simulator function `simulate_clusters()` supports all
+combinations via its arguments (`cluster_size_range`, `two_sample`,
+`under_alternative`, `left_truncate`). Stage 2 expansion involves
+writing a runner that sweeps over the parameter grid; the simulator
+infrastructure here is reusable.
 
-## Reference
+## References
 
 Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous
 multistate processes with clustered observations. *Biometrics*,
 77(2), 533-546. doi:10.1111/biom.13327
+
+Bakoyannis, G., & Bandyopadhyay, D. (2022). Nonparametric tests for
+multistate processes with clustered data. *Annals of the Institute
+of Statistical Mathematics*, 74(5), 837-867.
+doi:10.1007/s10463-021-00819-x
