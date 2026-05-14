@@ -31,7 +31,7 @@ A list with elements \code{ll.band} and \code{ul.band}:
 \description{
 Constructs a simultaneous (uniform-over-time) confidence band for a
 transition probability curve. The band is built on the cloglog
-scale: for each bootstrap replicate, the studentized supremum
+scale: for each bootstrap replicate, the standardized supremum
 \eqn{\sup_t |g(\hat P_b(t)) - g(\hat P(t))| / \mathrm{SE}_g(t)} is
 computed, where \eqn{\mathrm{SE}_g(t)} is the delta-method SE on
 the cloglog scale. The \code{level} quantile of those suprema is

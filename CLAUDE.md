@@ -255,7 +255,7 @@ Strict rules, applied in order — stop on first violation:
   bootstrap. `ci_cloglog(point, se)` takes the probability-scale SE
   and applies \eqn{\mathrm{SE}_g = \mathrm{SE}(\hat P) / |\hat P
   \log \hat P|}; the simultaneous band uses the same delta-method
-  \eqn{\mathrm{SE}_g} to studentize cloglog residuals computed from
+  \eqn{\mathrm{SE}_g} to standardize cloglog deviations computed from
   the existing replicate matrix. One bootstrap, one scale.
 - **Two-sample test scaling depends on the asymptotic regime, not on
   the bootstrap scheme.** `ks_pvalue(diff_point, diff_boot, scale)`
@@ -370,6 +370,19 @@ paper. Do not change this.
 
 ## Open TODOs
 
+### Methodological items requiring future attention
+
+- Confidence band weight: v0.1 ships with standardized
+  construction; v0.2 will add Bakoyannis (2021) Section 2.3
+  q-weighted construction and make it the default.
+- K-S test weight: v0.1 uses unit weight; v0.2 will add
+  harmonic-mean weight per Bakoyannis (2021) Section 2.5.
+- Case (iii) mixed cluster structure: v0.1 errors on this
+  case; v0.3 will add hybrid tests per Bakoyannis &
+  Bandyopadhyay (2022) Section 3.2.2.
+
+### Completed
+
 - [x] Verify `prodint_AJ()` matches `mstate::probtrans()` to ~1e-12 on
       the example data (done: agrees to ~2e-16 on a 50-subject
       progressive illness-death case; see `test-regression-mstate.R`)
@@ -379,20 +392,80 @@ paper. Do not change this.
       (`set.seed(2026)`, 40 subjects, 8 clusters,
       illness-death-with-recovery). Documented in `R/data.R`.
       `LazyData: true` added to `DESCRIPTION`.
+
+### Unscheduled housekeeping (not tied to a release)
+
 - [ ] Add `R/zzz.R` with `globalVariables(...)` for CRAN's
       "no visible binding" notes (not currently needed — `R CMD
       check` is clean with 0 notes; revisit if notes appear)
-- [ ] Implement linear and L2 tests (planned v0.2)
-- [ ] Implement weighted K-S test per Bakoyannis (2021) Section 2.5
-      (v0.2). The current K-S uses unit weight; the recommended
-      default is the harmonic-mean weight
-      `W(t) = prod_p Y_p(t) / sum_p Y_p(t)`, which requires
-      computing the per-group at-risk processes and threading them
-      into `ks_pvalue()` (likely as an optional `weight` argument
-      held fixed across bootstrap replicates).
-- [ ] Add `plot.patp()` S3 method
 - [ ] Decide whether to drop `mstate` from `Suggests` after regression
       test is in place
+
+### v0.1.0 (current submission, pending resubmission)
+
+- Withdraw current CRAN submission.
+- Add a Note section to ?confidence_band and ?patp explaining
+  that v0.1 uses a standardized supremum band on the cloglog
+  scale rather than the q-weighted Hall-Wellner construction
+  from Bakoyannis (2021) Section 2.3. Both are asymptotically
+  valid; the paper's construction will be added in v0.2 and
+  become the default.
+- Add a one-line entry in NEWS.md "Known limitations" with
+  the same disclosure.
+- Re-run devtools::check_win_devel() and resubmit.
+
+### v0.1.1 (additive features, no methodology changes)
+
+- Add pasop() — state occupation probabilities. Same engine
+  as patp() but with a cleaner API (no h, no s):
+    pasop(msm(...) ~ 1, data = d, tmat = tmat, j = 2)
+  Use a thin wrapper around the existing internal computation.
+  S3 class c("pasop", "list").
+- Add plot.patp() — base R plot method. Step function curve
+  with pointwise CI and (if computed) simultaneous band. For
+  two-sample, plot both curves with distinct colors/linetypes.
+  Title shows the estimand. Sensible axis labels. add = TRUE
+  option to overlay.
+- Add plot.pasop() — analogous plot method for state
+  occupation curves.
+- Update vignette to demonstrate pasop() and plot methods.
+- Update NEWS.md accordingly.
+
+### v0.2.0 (analytical inference framework)
+
+- Closed-form influence functions (gamma, psi for ACM and TCM
+  populations), in R/influence.R. Reference: Bakoyannis (2021)
+  Web Appendix A.
+- Multiplier (wild) bootstrap as default for bands and tests.
+- Linear test (analytical Z-test, no resampling) per
+  Bakoyannis & Bandyopadhyay (2022) Section 3.
+- Harmonic-mean weighted K-S test per Bakoyannis (2021)
+  Section 2.5.
+- Bakoyannis (2021) Section 2.3 q-weighted band as
+  band_method = "hw_q"; make it the default. Keep current
+  standardized band as band_method = "standardized".
+- variance = c("influence", "bootstrap") argument with
+  "influence" as default.
+- test_type = c("ks", "linear") argument.
+- weight argument exposing the at-risk-based weight.
+- Influence-function SE vs bootstrap regression test.
+- Stage 2 simulation reproducing Bakoyannis (2021) tables.
+- Vignette section per test type and a performance comparison
+  vignette.
+
+### v0.3.0 (advanced methodology)
+
+- L^2-norm test.
+- Hybrid tests for case (iii) mixed cluster structure
+  (Bakoyannis & Bandyopadhyay 2022 Section 3.2.2).
+- Recovery-model simulation studies.
+- Optional Rcpp port of prodint_AJ if profiling shows it's
+  the bottleneck.
+- Extend test_type with "l2"; add design = "mixed".
+- Stage 2 simulation reproducing Bakoyannis & Bandyopadhyay
+  (2022) tables.
+- Recovery-model validation (compare to etm where applicable).
+- Companion software paper (R Journal).
 
 ## Useful commands
 

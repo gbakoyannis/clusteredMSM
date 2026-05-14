@@ -59,7 +59,7 @@ ci_cloglog <- function(point, se, level = 0.95) {
 #'
 #' Constructs a simultaneous (uniform-over-time) confidence band for a
 #' transition probability curve. The band is built on the cloglog
-#' scale: for each bootstrap replicate, the studentized supremum
+#' scale: for each bootstrap replicate, the standardized supremum
 #' \eqn{\sup_t |g(\hat P_b(t)) - g(\hat P(t))| / \mathrm{SE}_g(t)} is
 #' computed, where \eqn{\mathrm{SE}_g(t)} is the delta-method SE on
 #' the cloglog scale. The \code{level} quantile of those suprema is
@@ -129,7 +129,7 @@ confidence_band <- function(point, boot, times,
   G[invalid] <- NA_real_
   G       <- log(-log(G))
 
-  # Studentized residuals on cloglog scale; replicate-by-replicate sup
+  # Standardized cloglog deviations; replicate-by-replicate sup
   resid <- abs(sweep(G, 1L, g_P, FUN = "-")) / se_g
   sups  <- apply(resid, 2L, max, na.rm = TRUE)
   sups  <- sups[is.finite(sups)]
