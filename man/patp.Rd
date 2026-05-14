@@ -170,11 +170,12 @@ extremes of follow-up; outside that window \code{ll.band} and
 \code{ul.band} are \code{NA}. See \code{\link{confidence_band}()}
 for the \code{trim} argument.
 
-Note: in this version the simultaneous band uses a standardized
-supremum construction on the cloglog scale, which is
-asymptotically valid but differs from the q-weighted Hall-Wellner
+Note: in this version the simultaneous band uses an
+equal-precision-type construction on the cloglog scale, which is
+asymptotically valid but differs from the Hall-Wellner-type
 construction of Bakoyannis (2021) Section 2.3 (planned for a
-future release). See \code{\link{confidence_band}()} for details.
+future release). See \code{\link{confidence_band}()} for the full
+disclosure.
 }
 
 \examples{

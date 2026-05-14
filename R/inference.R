@@ -91,15 +91,18 @@ ci_cloglog <- function(point, se, level = 0.95) {
 #' bootstrap is run.
 #'
 #' @section Note:
-#' This version uses a standardized supremum band on the cloglog
-#' scale, in which the bootstrap supremum statistic is standardized
-#' pointwise by the delta-method standard error. This construction
-#' is asymptotically valid under conditions C1-C6 of Bakoyannis
-#' (2021), but differs from the specific q-weighted Hall-Wellner
-#' construction proposed in Section 2.3 of that paper. Both
-#' constructions yield asymptotically valid simultaneous bands.
-#' The paper's q-weighted construction will be added as a
-#' \code{band_method} option in a future release and will become
+#' This version uses an equal-precision-type band on the cloglog
+#' scale, in which the bootstrap deviation is standardized pointwise
+#' by the delta-method standard error of \eqn{P(t)}. By the self-
+#' cancellation of \eqn{\sqrt{n}} factors, this is asymptotically
+#' equivalent to standardizing the limit process by its asymptotic
+#' standard error on the cloglog scale, which is the standard
+#' equal-precision construction. This construction is asymptotically
+#' valid under conditions C1-C6 of Bakoyannis (2021), but differs
+#' from the Hall-Wellner-type weight proposed in Section 2.3 of that
+#' paper. Both constructions yield asymptotically valid simultaneous
+#' bands. The paper's Hall-Wellner-type construction will be added as
+#' a \code{band_method} option in a future release and will become
 #' the default.
 #'
 #' @references

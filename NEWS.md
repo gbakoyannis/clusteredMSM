@@ -75,6 +75,6 @@ validation (`validate_intervals()`).
     following Bakoyannis (2021) Section 2.5 and Bakoyannis &
     Bandyopadhyay (2022) is planned for v0.2, alongside the linear and
     L2 tests.
--   Confidence bands use a standardized supremum construction on the
-    cloglog scale; the q-weighted construction from Bakoyannis (2021)
-    Section 2.3 will be added in v0.2.
+-   Confidence bands use an equal-precision-type construction on the
+    cloglog scale; the Hall-Wellner-type construction from Bakoyannis
+    (2021) Section 2.3 will be added in v0.2.

@@ -372,9 +372,9 @@ paper. Do not change this.
 
 ### Methodological items requiring future attention
 
-- Confidence band weight: v0.1 ships with standardized
+- Confidence band weight: v0.1 ships with equal-precision-type
   construction; v0.2 will add Bakoyannis (2021) Section 2.3
-  q-weighted construction and make it the default.
+  Hall-Wellner-type construction and make it the default.
 - K-S test weight: v0.1 uses unit weight; v0.2 will add
   harmonic-mean weight per Bakoyannis (2021) Section 2.5.
 - Case (iii) mixed cluster structure: v0.1 errors on this
@@ -405,8 +405,8 @@ paper. Do not change this.
 
 - Withdraw current CRAN submission.
 - Add a Note section to ?confidence_band and ?patp explaining
-  that v0.1 uses a standardized supremum band on the cloglog
-  scale rather than the q-weighted Hall-Wellner construction
+  that v0.1 uses an equal-precision-type band on the cloglog
+  scale rather than the Hall-Wellner-type weight
   from Bakoyannis (2021) Section 2.3. Both are asymptotically
   valid; the paper's construction will be added in v0.2 and
   become the default.
@@ -441,9 +441,9 @@ paper. Do not change this.
   Bakoyannis & Bandyopadhyay (2022) Section 3.
 - Harmonic-mean weighted K-S test per Bakoyannis (2021)
   Section 2.5.
-- Bakoyannis (2021) Section 2.3 q-weighted band as
+- Bakoyannis (2021) Section 2.3 Hall-Wellner-type band as
   band_method = "hw_q"; make it the default. Keep current
-  standardized band as band_method = "standardized".
+  equal-precision-type band as band_method = "standardized".
 - variance = c("influence", "bootstrap") argument with
   "influence" as default.
 - test_type = c("ks", "linear") argument.
