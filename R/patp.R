@@ -128,6 +128,12 @@
 #' \code{ul.band} are \code{NA}. See \code{\link{confidence_band}()}
 #' for the \code{trim} argument.
 #'
+#' Note: in this version the simultaneous band uses a standardized
+#' supremum construction on the cloglog scale, which is
+#' asymptotically valid but differs from the q-weighted Hall-Wellner
+#' construction of Bakoyannis (2021) Section 2.3 (planned for a
+#' future release). See \code{\link{confidence_band}()} for details.
+#'
 #' @references
 #' Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous
 #' multistate processes with clustered observations.

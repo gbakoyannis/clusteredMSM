@@ -90,6 +90,23 @@ ci_cloglog <- function(point, se, level = 0.95) {
 #' the existing replicates pointwise -- no separate cloglog-scale
 #' bootstrap is run.
 #'
+#' @section Note:
+#' This version uses a standardized supremum band on the cloglog
+#' scale, in which the bootstrap supremum statistic is standardized
+#' pointwise by the delta-method standard error. This construction
+#' is asymptotically valid under conditions C1-C6 of Bakoyannis
+#' (2021), but differs from the specific q-weighted Hall-Wellner
+#' construction proposed in Section 2.3 of that paper. Both
+#' constructions yield asymptotically valid simultaneous bands.
+#' The paper's q-weighted construction will be added as a
+#' \code{band_method} option in a future release and will become
+#' the default.
+#'
+#' @references
+#' Bakoyannis, G. (2021). Nonparametric analysis of nonhomogeneous
+#' multistate processes with clustered observations.
+#' \emph{Biometrics}, 77(2), 533-546. \doi{10.1111/biom.13327}
+#'
 #' @export
 confidence_band <- function(point, boot, times,
                             level = 0.95, trim = c(0.05, 0.95)) {
