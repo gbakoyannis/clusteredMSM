@@ -2,34 +2,32 @@
 
 ## Resubmission
 
-This is a resubmission. In response to the reviewer's comment, the two
-examples previously wrapped in `\dontrun{}` (in `?state_at` and
-`?cut_at_lm`) have been unwrapped: they are now self-contained,
+This is a resubmission. The reviewer asked that examples not be wrapped
+in `\dontrun{}`, and that any genuinely slow examples use `\donttest{}`
+instead (per CRAN policy, with examples unwrapped entirely where they
+run in under 5 seconds).
+
+All occurrences have been addressed. Every example runs in well under
+5 seconds, so the previously `\dontrun{}`-wrapped examples (in
+`?state_at` and `?cut_at_lm`) have been unwrapped into self-contained,
 executable examples that build their input from the shipped
-`example_msm` data and run in well under 5 seconds. No remaining
-examples use `\dontrun{}`.
+`example_msm` data. No example now uses `\dontrun{}`, and no example
+needed `\donttest{}`.
 
 ## Test environments
 
-* local: macOS Sonoma 14.x, R 4.4.x
-* win-builder (devtools::check_win_devel()): R-devel
-* R-hub (rhub::rhub_check()): Linux (Ubuntu 22.04, R-release and R-devel)
-* GitHub Actions: ubuntu-latest, macos-latest, windows-latest
+* win-builder (`devtools::check_win_devel()`): R-devel
+  (latest run: 2026-05-20)
 
 ## R CMD check results
 
 0 errors | 0 warnings | 1 note
 
-The NOTE is from `devtools::check_win_devel()` and has two parts, both
-expected:
-
-* "New submission" -- this is the first CRAN submission of the package.
-* "Possibly misspelled words in DESCRIPTION": Aalen, Bakoyannis,
-  Bandyopadhyay, Johansen, Multistate, multistate. The first four are
-  author surnames (Aalen-Johansen estimator; Bakoyannis 2021;
-  Bakoyannis & Bandyopadhyay 2022); "multistate" is the standard
-  technical term in the survival-analysis literature. All spellings
-  are intentional.
+The single NOTE flags this as a new submission (standard for any
+package not yet on CRAN) and lists possibly misspelled words in
+DESCRIPTION: Aalen, Bakoyannis, Bandyopadhyay, Johansen, Multistate,
+multistate. These are proper nouns (author names) or domain
+terminology and are correctly spelled.
 
 ## This is a new release
 
