@@ -1,5 +1,14 @@
 # cran-comments.md
 
+## Resubmission
+
+This is a resubmission. In response to the reviewer's comment, the two
+examples previously wrapped in `\dontrun{}` (in `?state_at` and
+`?cut_at_lm`) have been unwrapped: they are now self-contained,
+executable examples that build their input from the shipped
+`example_msm` data and run in well under 5 seconds. No remaining
+examples use `\dontrun{}`.
+
 ## Test environments
 
 * local: macOS Sonoma 14.x, R 4.4.x

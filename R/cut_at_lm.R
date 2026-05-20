@@ -41,9 +41,14 @@
 #' \emph{Biometrics} 77(2):533-546. \doi{10.1111/biom.13327}
 #'
 #' @examples
-#' \dontrun{
-#' msd_lm <- cut_at_lm(msd, s = 1.5)
-#' }
+#' data(example_msm)
+#' tmat <- trans_mat(list(c(2, 3), c(1, 3), integer(0)),
+#'                   names = c("Healthy", "Ill", "Dead"))
+#' long <- intervals_to_long(example_msm, tmat)
+#'
+#' # Restrict follow-up to after the landmark time s = 1.5
+#' long_lm <- cut_at_lm(long, s = 1.5)
+#' head(long_lm)
 #'
 #' @export
 cut_at_lm <- function(data, s) {

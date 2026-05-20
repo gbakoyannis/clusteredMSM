@@ -38,10 +38,13 @@ transitioned: they appear in their new state if a subsequent interval
 exists, otherwise they are excluded as absorbed/censored.
 }
 \examples{
-\dontrun{
-# After running intervals_to_long on illness-death data:
-state_at(msd, s = 1.5, id = "id")
-}
+data(example_msm)
+tmat <- trans_mat(list(c(2, 3), c(1, 3), integer(0)),
+                  names = c("Healthy", "Ill", "Dead"))
+long <- intervals_to_long(example_msm, tmat)
+
+# Each subject's state at the landmark time s = 1.5
+head(state_at(long, s = 1.5, id = "id"))
 
 }
 \references{
